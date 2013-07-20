@@ -11,19 +11,19 @@
     tools:context=".MainMenuActivity" >
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/btn_menu_install"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/menu_install" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/btn_menu_download"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/menu_download" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/btn_menu_maint"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/menu_maint" />

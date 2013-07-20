@@ -7,5 +7,6 @@
     <string name="menu_install">Install Voice Data</string>
     <string name="menu_download">Downlod Voice Data</string>
     <string name="menu_maint">Maintenance</string>
+    <string name="title_activity_install_list">InstallListActivity</string>
 
 </resources>

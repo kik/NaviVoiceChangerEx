@@ -13,7 +13,6 @@ public class MainMenuActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_menu);
 		
-		
 		View.OnClickListener click_hdl_install = new View.OnClickListener() {
 			
 			@Override
@@ -22,9 +21,9 @@ public class MainMenuActivity extends Activity {
 				startActivity(intent);
 			}
 		};
-		
 		View btn_install = findViewById(R.id.btn_menu_install);
 		btn_install.setOnClickListener(click_hdl_install);
+		
 	}
 
 	@Override

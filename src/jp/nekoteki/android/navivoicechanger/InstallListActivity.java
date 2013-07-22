@@ -1,22 +1,82 @@
 package jp.nekoteki.android.navivoicechanger;
 
+import java.util.List;
+
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.os.Build;
 
 
 public class InstallListActivity extends Activity {
+	
+	private class ListVoiceDataAdapter extends BaseAdapter {
+		private Context context;
+		private List<VoiceData> list;
+
+		public ListVoiceDataAdapter(Context context) {
+			super();
+			this.context = context;
+			VoiceData.copyVoiceAssets(context);
+			this.list = VoiceData.scanVoiceData(context);
+		}
+		
+		@Override
+		public int getCount() {
+			return this.list.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return this.list.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			VoiceData vd = (VoiceData) getItem(position);
+			
+			LinearLayout layout = new LinearLayout(context);
+			layout.setOrientation(LinearLayout.VERTICAL);
+			convertView = layout;
+
+			TextView title = new TextView(context);
+			title.setText(vd.getTitle());
+			layout.addView(title);
+
+			TextView rating = new TextView(context);
+			rating.setText(String.format("Rating: %f", vd.getRating()));
+			layout.addView(rating);
+
+			return convertView;
+		}
+		
+	}
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_install_list);
-		// Show the Up button in the action bar.
-		setupActionBar();
+		//setupActionBar();
+		
+		ListView lv = (ListView) findViewById(R.id.voice_list);
+		lv.setAdapter(new ListVoiceDataAdapter(this.getApplicationContext()));
 	}
 
 	/**

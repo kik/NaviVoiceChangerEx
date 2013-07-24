@@ -119,7 +119,7 @@ public class VoiceData {
 				OutputStream os = new FileOutputStream(of);
 				InputStream  is = assetManager.open("voicedata/test/"+filename);
 				copyStream(is, os);
-				is.close();	
+				is.close();
 				os.close();
 			}
 		} catch (IOException e) {
@@ -349,8 +349,10 @@ public class VoiceData {
 			// ignore
 		}
 		
-		
 		// TODO: extract TTS archive!
+		
+		((android.app.ActivityManager) this.getContext().getSystemService(android.app.Activity.ACTIVITY_SERVICE))
+			.killBackgroundProcesses("com.google.android.apps.maps");
 		Log.i("VoiceData", "Install finished!");
 	}
 	

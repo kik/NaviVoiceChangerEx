@@ -85,6 +85,7 @@ public class VoiceData {
 				vd = new VoiceData(vdd, context);
 			} catch (Exception e) {
 				Log.d("VoiceData", "Invalid voice data dir, skip: "+vdd.getName()+": "+e.getMessage());
+				e.printStackTrace();
 				continue;
 			}
 			list.add(vd);
@@ -202,10 +203,10 @@ public class VoiceData {
 
 	public VoiceData(File file, Context context) {
 		if (!file.exists() || !file.isDirectory())
-			throw new 	IllegalArgumentException("Invalid data dir");
+			throw new 	IllegalArgumentException("Data dir dose not exist");
 		File ini = new File(file, DATA_INI);
 		if (!ini.exists())
-			throw new 	IllegalArgumentException("Invalid data dir");
+			throw new 	IllegalArgumentException("Ini file not found");
 		
 		Properties prop = new Properties();
 		try {
@@ -220,13 +221,17 @@ public class VoiceData {
 		this.title       = prop.getProperty("title");
 		this.description = prop.getProperty("description");
 		this.path        = file.getAbsolutePath();
-		this.rating      = Float.parseFloat(prop.getProperty("rating"));
 		this.lang        = prop.getProperty("lang");
 		this.unit        = prop.getProperty("unit");
 		try {
+			this.rating  = Float.parseFloat(prop.getProperty("rating"));
+		} catch (Exception e) {
+			this.rating = 0;
+		}
+		try {
 			this.version = Integer.parseInt(prop.getProperty("version"));
 		} catch (Exception e) {
- 		    // ignore
+			this.version = 0;
 		}
 		Log.d("VoiceData", "Initalized: "+this.toString());
 	}

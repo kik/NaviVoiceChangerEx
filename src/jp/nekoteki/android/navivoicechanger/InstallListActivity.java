@@ -73,57 +73,24 @@ public class InstallListActivity extends Activity {
 			
 			RelativeLayout container = new RelativeLayout(context);
 			
-			LinearLayout layout = new LinearLayout(context);
-			layout.setOrientation(LinearLayout.VERTICAL);
+			LinearLayout textlayout = new LinearLayout(context);
+			textlayout.setOrientation(LinearLayout.VERTICAL);
+			textlayout.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			textlayout.setFocusable(false);
+			textlayout.setFocusableInTouchMode(false);
 
 			TextView title = new TextView(context);
 			title.setText(vd.getTitle());
 			title.setTextColor(Color.BLACK);
-			layout.addView(title);
+			title.setTextSize(16);
+			textlayout.addView(title);
 
 			TextView description = new TextView(context);
+			description.setTextSize(13);
 			description.setText(vd.getDescription());
-			layout.addView(description);
-
-			container.addView(layout);
+			textlayout.addView(description);
 			
-			ImageView btn_install = new ImageView(context);
-			btn_install.setImageResource(android.R.drawable.ic_menu_add);
-			
-			AlertDialog.Builder alertDialog = new AlertDialog.Builder(this.context);
-			alertDialog.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface arg0, int arg1) {
-									
-				}
-				
-			});
-			class InstallClkHdl implements View.OnClickListener {
-				public VoiceData vd;
-				public InstallListActivity activity;
-				
-				public InstallClkHdl(VoiceData vd, InstallListActivity activity) {
-					this.vd = vd;
-					this.activity = activity;
-				}
-				
-				@Override
-				public void onClick(View v) {
-					try {
-						this.vd.install();
-					} catch (Exception e) {
-						this.activity.showInstallResult(e);
-					}
-				}
-				
-			}
-			InstallClkHdl click_hdl = new InstallClkHdl(vd, (InstallListActivity) this.context);
-			
-			btn_install.setOnClickListener(click_hdl);
-
-			android.widget.RelativeLayout.LayoutParams lparam = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-			lparam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-			container.addView(btn_install, lparam);
+			container.addView(textlayout);
 			
 			convertView = container;
 			return convertView;
@@ -146,12 +113,9 @@ public class InstallListActivity extends Activity {
 		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> list, View item, int pos, long id) {
-				VoiceData vd = (VoiceData) list.getAdapter().getItem(pos);
-				if (vd == null) return;
-				vd.playPreview();
+				item.performLongClick();
 			}
 		});
-		
 		registerForContextMenu(lv);
 	}
 

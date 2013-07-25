@@ -9,7 +9,7 @@
     <string name="menu_maint">Maintenance</string>
     <string name="title_activity_install_list">Install Voice Data</string>
     <string name="err_broken_archive">Voice archive is broken. Please re-download this data.</string>
-    <string name="err_no_target">Navigation voice data folder is not found.\nPlease launch Maps app and start navigation to any location once. Then back to this install menu.</string>
+    <string name="err_no_target">Navigation voice data folder is not found.\nPlease launch Maps and start navigation to any location once, then exit navigation.\n After that, back to this install menu.</string>
     <string name="err_fileio">I/O Error on file operation. Please check your SD card.</string>
     <string name="install_error">Install Error</string>
     <string name="install_success_message">Voice data has been installed successfully.\nIf you have no effect, please restart Map.</string>

@@ -75,6 +75,8 @@ public class VoiceData {
 		if (!vdDir.isDirectory())
 			vdDir.mkdirs();
 		
+		Log.d(VoiceData.class.getClass().getName(), "Voice Data Dir = "+vdDir.getAbsolutePath());
+		
 		File[] vddlist = vdDir.listFiles();
 		
 		if (vddlist == null) return list;
@@ -126,7 +128,7 @@ public class VoiceData {
 
 	}
 	
-	static void purgeVoiceData(Context context) {
+	static void purgeVoiceDataFromNavi(Context context) {
 		File testdata_dir = getTargetBaseDir(context);
 		if (!testdata_dir.exists() || !testdata_dir.isDirectory())
 			return;
@@ -199,6 +201,14 @@ public class VoiceData {
 			if (vd.getId() == id) return vd;
 		}
 		return null;
+	}
+
+	public static void purgeDownloaded(Context context) {
+		List<VoiceData> all = scanVoiceData(context);
+		if (all == null) return;
+		for (VoiceData vd: all) {
+			vd.delete();
+		}
 	}
 
 	public VoiceData(File file, Context context) {
@@ -373,7 +383,7 @@ public class VoiceData {
 		if (!hasTargetVoiceData(this.getContext()))
 			throw new DataDirNotFound();
 
-		purgeVoiceData(this.getContext());
+		purgeVoiceDataFromNavi(this.getContext());
 		
 		Log.i("VoiceData", "Install start for "+this.toString());
 		File voice_archive = new File(this.getPath(), ARCHIVE_FILENAME);

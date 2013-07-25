@@ -22,5 +22,13 @@
     <string name="voice_deleted">Voice Data has been deleted.</string>
     <string name="err_unknown">An unknown error occurred.</string>
     <string name="c_menu_preview">Preview</string>
+    <string name="title_activity_maint">Data Maintenance</string>
+    <string name="btn_purge_installed">Purge Installed Data</string>
+    <string name="btn_purge_downloaded">Delete all downloaded</string>
+    <string name="desc_purge_installed">Voice setting on Navigation will be reset. This action removes installed voice data and all cache files from data directory of Maps.</string>
+    <string name="desc_purge_downloaded">Delete all downloaded voice data from THIS APPLICATION (NOT Navigation).</string>
+    <color name="maint_bg">#fff3f3f3</color>
+    <string name="msg_installed_removed">Installed data has been removed.</string>
+    <string name="msg_downloaded_removed">Downloaded data has been removed.</string>
 
 </resources>

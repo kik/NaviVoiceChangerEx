@@ -12,20 +12,23 @@ public class MainMenuActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_menu);
-		
 		setTitle(R.string.title_activity_main);
 		
-		View.OnClickListener click_hdl_install = new View.OnClickListener() {
-			
+		findViewById(R.id.btn_menu_install).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(MainMenuActivity.this, InstallListActivity.class);
-				startActivity(intent);
+				startActivity(new Intent(MainMenuActivity.this, InstallListActivity.class));
 			}
-		};
-		View btn_install = findViewById(R.id.btn_menu_install);
-		btn_install.setOnClickListener(click_hdl_install);
+		});
 		
+		findViewById(R.id.btn_menu_maint).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(MainMenuActivity.this, MaintActivity.class));
+			}
+		});
+		
+		findViewById(R.id.btn_download).setEnabled(false);
 	}
 
 	@Override

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">ナビボイスチェンジャー</string>
+    <string name="action_settings">設定</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_install">音声データのインストール</string>
+    <string name="menu_download">音声データのダウンロード</string>
+    <string name="menu_maint">メンテナンス</string>
+    <string name="title_activity_install_list">音声データのインストール</string>
+    <string name="err_broken_archive">音声データが壊れています。ダウンロードしなおしてください。</string>
+    <string name="err_no_target">ナビの音声データフォルダが見つかりません。\n一度マップを起動し、どこでもいいのでナビを開始してすぐに終了してください。\nこれでデータフォルダが作成されます。</string>
+    <string name="err_fileio">I/O エラーが発生しました。SDカードを確認してください。</string>
+    <string name="install_error">インストールエラー</string>
+    <string name="install_success_message">音声データは正しくインストールされました。\nもし変化がない場合は、マップ及びナビを完全に再起動してください。</string>
+    <string name="install_success">インストール成功</string>
+    <string name="close">閉じる</string>
+    <string name="title_activity_main">ナビボイスチェンジャー</string>
+    <string name="c_menu_rate">評価...</string>
+    <string name="c_menu_delete">削除</string>
+    <string name="c_menu_install">インストール</string>
+    <string name="voice_deleted">音声データを削除しました。</string>
+    <string name="err_unknown">不明なエラーが発生しました。</string>
+    <string name="c_menu_preview">プレビュー</string>
+    <string name="title_activity_maint">データメンテナンス</string>
+    <string name="btn_purge_installed">インストールした音声データの削除</string>
+    <string name="btn_purge_downloaded">ダウンロードデータを全て削除</string>
+    <string name="desc_purge_installed">ナビの音声を初期状態にリセットします。\nこのアクションはナビのデータフォルダから、インストールした音声データ及びキャッシュデータを全て削除します。</string>
+    <string name="desc_purge_downloaded">ダウンロードした音声データを全て削除します（データはこのアプリケーションから削除され、ナビの音声はそのままになります）。</string>
+    <color name="maint_bg">#fff3f3f3</color>
+    <string name="msg_installed_removed">音声データを削除しました。</string>
+    <string name="msg_downloaded_removed">ダウンロードしたデータを削除しました。</string>
+
+</resources>

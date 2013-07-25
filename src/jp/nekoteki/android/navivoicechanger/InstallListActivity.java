@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -144,6 +145,15 @@ public class InstallListActivity extends Activity {
 		 
 		ListView lv = (ListView) findViewById(R.id.voice_list);
 		lv.setAdapter(new ListVoiceDataAdapter(this));
+		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> list, View item, int pos, long id) {
+				VoiceData vd = (VoiceData) list.getAdapter().getItem(pos);
+				if (vd == null) return;
+				vd.playPreview();
+			}
+		});
+		
 		registerForContextMenu(lv);
 	}
 
@@ -204,7 +214,7 @@ public class InstallListActivity extends Activity {
 		if (vd == null) return true;
 		switch (item.getItemId()) {
 		case C_MENU_PREVIEW:
-			
+			vd.playPreview();
 			break;
 		case C_MENU_INSTALL:
 			try {

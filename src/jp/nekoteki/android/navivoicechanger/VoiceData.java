@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URI;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -23,6 +24,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.util.Log;
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -390,6 +393,10 @@ public class VoiceData {
 			}
 		}
 		dir.delete();
+	}
+
+	public void playPreview() {
+		MediaPlayer.create(this.getContext(), Uri.parse("file://"+this.getPath()+"/preview.ogg")).start();
 	}
 
 }

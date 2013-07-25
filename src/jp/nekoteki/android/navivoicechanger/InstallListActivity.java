@@ -6,27 +6,38 @@ import java.util.zip.ZipException;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.view.Gravity;
+import android.app.AlertDialog;
+import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RatingBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Build;
 
 
 public class InstallListActivity extends Activity {
+	final static int C_MENU_PREVIEW = 0;
+	final static int C_MENU_INSTALL = 1;
+	final static int C_MENU_RATE    = 2;
+	final static int C_MENU_DELETE  = 3;
 	
 	private class ListVoiceDataAdapter extends BaseAdapter {
 		private Context context;
@@ -35,7 +46,10 @@ public class InstallListActivity extends Activity {
 		public ListVoiceDataAdapter(Context context) {
 			super();
 			this.context = context;
-			VoiceData.copyVoiceAssets(context);
+			this.rescan();
+ 		}
+		
+		public void rescan() {
 			this.list = VoiceData.scanVoiceData(context);
 		}
 		
@@ -58,8 +72,7 @@ public class InstallListActivity extends Activity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			VoiceData vd = (VoiceData) getItem(position);
 			
-			LinearLayout container = new LinearLayout(context);
-			container.setOrientation(LinearLayout.HORIZONTAL);
+			RelativeLayout container = new RelativeLayout(context);
 			
 			LinearLayout layout = new LinearLayout(context);
 			layout.setOrientation(LinearLayout.VERTICAL);
@@ -78,38 +91,40 @@ public class InstallListActivity extends Activity {
 			ImageView btn_install = new ImageView(context);
 			btn_install.setImageResource(android.R.drawable.ic_menu_add);
 			
+			AlertDialog.Builder alertDialog = new AlertDialog.Builder(this.context);
+			alertDialog.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface arg0, int arg1) {
+									
+				}
+				
+			});
 			class InstallClkHdl implements View.OnClickListener {
 				public VoiceData vd;
+				public InstallListActivity activity;
 				
-				public InstallClkHdl(VoiceData vd) {
+				public InstallClkHdl(VoiceData vd, InstallListActivity activity) {
 					this.vd = vd;
+					this.activity = activity;
 				}
 				
 				@Override
 				public void onClick(View v) {
 					try {
 						this.vd.install();
-					} catch (ZipException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (DataDirNotFound e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (BrokenArchive e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					} catch (Exception e) {
+						this.activity.showInstallResult(e);
 					}
 				}
 				
 			}
-			InstallClkHdl click_hdl = new InstallClkHdl(vd);
+			InstallClkHdl click_hdl = new InstallClkHdl(vd, (InstallListActivity) this.context);
 			
 			btn_install.setOnClickListener(click_hdl);
 
-			container.addView(btn_install);
+			android.widget.RelativeLayout.LayoutParams lparam = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			lparam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+			container.addView(btn_install, lparam);
 			
 			convertView = container;
 			return convertView;
@@ -123,9 +138,13 @@ public class InstallListActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_install_list);
 		//setupActionBar();
+		setTitle(R.string.title_activity_install_list);
 		
+		VoiceData.copyVoiceAssets(this);
+		 
 		ListView lv = (ListView) findViewById(R.id.voice_list);
-		lv.setAdapter(new ListVoiceDataAdapter(this.getApplicationContext()));
+		lv.setAdapter(new ListVoiceDataAdapter(this));
+		registerForContextMenu(lv);
 	}
 
 	/**
@@ -161,5 +180,74 @@ public class InstallListActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
+	public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo info) {
+		super.onCreateContextMenu(menu, view, info);
+		AdapterContextMenuInfo ainfo = (AdapterContextMenuInfo) info;
+		ListView listView = (ListView)view;
+		
+		VoiceData vd = (VoiceData) listView.getItemAtPosition(ainfo.position);
+		menu.setHeaderTitle(vd.getTitle());
+		menu.add(vd.getId(), C_MENU_PREVIEW, 0, R.string.c_menu_preview);
+		menu.add(vd.getId(), C_MENU_INSTALL, 0, R.string.c_menu_install);
+		menu.add(vd.getId(), C_MENU_RATE, 0, R.string.c_menu_rate);
+		menu.add(vd.getId(), C_MENU_DELETE, 0, R.string.c_menu_delete);
 
+		if (vd.getId() < 1) {
+			menu.getItem(2).setEnabled(false);
+			menu.getItem(3).setEnabled(false);
+		}
+	}
+	
+	public boolean onContextItemSelected(MenuItem item) {
+		VoiceData vd = VoiceData.getById(this.getApplicationContext(), item.getGroupId());
+		if (vd == null) return true;
+		switch (item.getItemId()) {
+		case C_MENU_PREVIEW:
+			
+			break;
+		case C_MENU_INSTALL:
+			try {
+				vd.install();
+				this.showInstallResult(null);
+			} catch (Exception e) {
+				this.showInstallResult(e);
+			}
+			break;
+		case C_MENU_DELETE:
+			vd.delete();
+			// TODO: remove item from list.
+			Toast.makeText(this, R.string.voice_deleted, Toast.LENGTH_SHORT).show();
+			break;
+		case C_MENU_RATE:
+			// TODO: implement!
+			Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show();
+			break;
+		}
+		return true;
+	}
+
+	public void showInstallResult(Exception e) {
+		AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+		dialog.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) { }							
+		});
+		dialog.setTitle(R.string.install_error);
+		if (e == null) {
+			dialog.setTitle(R.string.install_success);
+			dialog.setMessage(R.string.install_success_message);
+		} else if (e instanceof BrokenArchive || e instanceof ZipException) {
+			dialog.setMessage(R.string.err_broken_archive);
+		} else if (e instanceof DataDirNotFound) {
+			dialog.setMessage(R.string.err_no_target);
+		} else if (e instanceof IOException) {
+			dialog.setMessage(R.string.err_fileio);
+		} else {
+			dialog.setMessage(R.string.err_unknown);
+			Log.e("Inatall Activity", "Unknown Erorr!! ");
+			e.printStackTrace();
+		}
+		dialog.show();
+	}
 }

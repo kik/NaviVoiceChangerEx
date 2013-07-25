@@ -7,6 +7,20 @@
     <string name="menu_install">Install Voice Data</string>
     <string name="menu_download">Downlod Voice Data</string>
     <string name="menu_maint">Maintenance</string>
-    <string name="title_activity_install_list">InstallListActivity</string>
+    <string name="title_activity_install_list">Install Voice Data</string>
+    <string name="err_broken_archive">Voice archive is broken. Please re-download this data.</string>
+    <string name="err_no_target">Navigation voice data folder is not found.\nPlease launch Maps app and start navigation to any location once. Then back to this install menu.</string>
+    <string name="err_fileio">I/O Error on file operation. Please check your SD card.</string>
+    <string name="install_error">Install Error</string>
+    <string name="install_success_message">Voice data has been installed successfully.\nIf you have no effect, please restart Map.</string>
+    <string name="install_success">Install Success</string>
+    <string name="close">Close</string>
+    <string name="title_activity_main">Navi Voice Changer</string>
+    <string name="c_menu_rate">Rate...</string>
+    <string name="c_menu_delete">Delete</string>
+    <string name="c_menu_install">Install</string>
+    <string name="voice_deleted">Voice Data has been deleted.</string>
+    <string name="err_unknown">An unknown error occurred.</string>
+    <string name="c_menu_preview">Preview</string>
 
 </resources>

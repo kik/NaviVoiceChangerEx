@@ -193,6 +193,16 @@ public class VoiceData {
 		return true;
 	}
 	
+
+	public static VoiceData getById(Context context, int id) {
+		List<VoiceData> all = scanVoiceData(context);
+		if (all == null) return null;
+		for (VoiceData vd: all) {
+			if (vd.getId() == id) return vd;
+		}
+		return null;
+	}
+
 	public VoiceData(File file, Context context) {
 		if (!file.exists() || !file.isDirectory())
 			throw new 	IllegalArgumentException("Invalid data dir");
@@ -370,5 +380,16 @@ public class VoiceData {
 		}
 			*/
 	}
-	
+
+	public void delete() {
+		File dir = new File(this.getPath());
+		File[] files = dir.listFiles();
+		if (files != null) {
+			for (File f: files) {
+				f.delete();
+			}
+		}
+		dir.delete();
+	}
+
 }

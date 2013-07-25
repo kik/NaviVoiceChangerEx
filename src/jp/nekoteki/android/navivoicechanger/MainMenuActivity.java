@@ -13,6 +13,8 @@ public class MainMenuActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_menu);
 		
+		setTitle(R.string.title_activity_main);
+		
 		View.OnClickListener click_hdl_install = new View.OnClickListener() {
 			
 			@Override

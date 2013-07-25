@@ -44,20 +44,21 @@ public class VoiceData {
 			return pathname.isFile();
 		}
 	};
-	
+
 	public final static String DATA_INI = "voicedata.ini";
 	public final static String UNIT_METRIC = "metric";
 	public final static String UNIT_IMPERIAL = "imperial";
 	public final static String ARCHIVE_FILENAME = "voice_instructions.zip";
-	public final static String TTS_ARCHIVE_FILENAME = "cannedtts.zip";
 
 	protected int id;
 	protected String title;
 	protected float rating;
 	protected String description;
 	protected String archive_md5;
+	protected String unit;
+	protected String lang;
 	protected String path;
-	protected String tts_archive_md5;
+	protected int version;
 	protected Context context;
 	
 	static List<VoiceData> scanVoiceData(Context context) {
@@ -162,7 +163,7 @@ public class VoiceData {
 	public static File getTargetTtsDir(Context context) {
 		return new File(getTargetBaseDir(context), "cannedtts");
 	}
-	
+
 	protected static void copyStream(InputStream in, OutputStream out) throws IOException {
 		byte[] buf = new byte[4096];
 		int read;
@@ -220,17 +221,26 @@ public class VoiceData {
 		this.description = prop.getProperty("description");
 		this.path        = file.getAbsolutePath();
 		this.rating      = Float.parseFloat(prop.getProperty("rating"));
+		this.lang        = prop.getProperty("lang");
+		this.unit        = prop.getProperty("unit");
+		try {
+			this.version = Integer.parseInt(prop.getProperty("version"));
+		} catch (Exception e) {
+ 		    // ignore
+		}
 		Log.d("VoiceData", "Initalized: "+this.toString());
 	}
 	
 	public String toString() {
-		return "<VoiceData id="+this.getId()+" title="+this.getTitle()+" path="+this.getPath()+" rating="+this.getRating()+">";
+		return "<VoiceData id="+this.getId()+" title="+this.getTitle()+
+				" lang="+this.getLang()+" unit="+this.getUnit()+
+				" path="+this.getPath()+">";
 	}
 	
-	public String getArchive_md5() {
+	public String getArchiveMD5() {
 		return archive_md5;
 	}
-	public void setArchive_md5(String archive_md5) {
+	public void setArchiveMD5(String archive_md5) {
 		this.archive_md5 = archive_md5;
 	}
 	public String getTitle() {
@@ -268,14 +278,6 @@ public class VoiceData {
 		this.id = id;
 	}
 
-	public String getTts_archive_md5() {
-		return tts_archive_md5;
-	}
-
-	public void setTts_archive_md5(String tts_archive_md5) {
-		this.tts_archive_md5 = tts_archive_md5;
-	}
-
 	public Context getContext() {
 		return context;
 	}
@@ -284,9 +286,33 @@ public class VoiceData {
 		this.context = context;
 	}
 
+	public String getUnit() {
+		return unit;
+	}
+
+	public void setUnit(String unit) {
+		this.unit = unit;
+	}
+
+	public String getLang() {
+		return lang;
+	}
+
+	public void setLang(String lang) {
+		this.lang = lang;
+	}
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
+	}
+
 	public void validate() throws BrokenArchive {
-		this.checkDigest(this.getPath() + "/" + ARCHIVE_FILENAME, this.getArchive_md5());
-		// this.checkDigest(this.getPath() + "/" + TTS_ARCHIVE_FILENAME, this.getTts_archive_md5()); // TODO: check tts archive
+		this.checkDigest(this.getPath() + "/" + ARCHIVE_FILENAME, this.getArchiveMD5());
+//		this.checkDigest(this.getPath() + "/" + TTS_ARCHIVE_FILENAME, this.getTtsArchiveMD5());
 	}
 	
 	public boolean isValid() {
@@ -355,28 +381,12 @@ public class VoiceData {
 			// ignore
 		}
 		
-		// TODO: extract TTS archive!
-		
 		((android.app.ActivityManager) this.getContext().getSystemService(android.app.Activity.ACTIVITY_SERVICE))
 			.killBackgroundProcesses("com.google.android.apps.maps");
+
 		Log.i("VoiceData", "Install finished!");
 	}
 	
-	protected void extractTtsArchive(File file, File target) {
-		// TODO: implement!
-		/*
-		ZipFile zipfile = new ZipFile(new File(this.getPath(), ARCHIVE_FILENAME));
-		Enumeration<? extends ZipEntry> zentries = zipfile.entries();
-		while (zentries.hasMoreElements()) {
-			ZipEntry entry = zentries.nextElement();
-			if (entry.isDirectory())
-				continue;
-			InputStream is = zipfile.getInputStream(entry);
-
-		}
-			*/
-	}
-
 	public void delete() {
 		File dir = new File(this.getPath());
 		File[] files = dir.listFiles();

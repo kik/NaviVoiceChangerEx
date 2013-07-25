@@ -410,7 +410,9 @@ public class VoiceData {
 				f.delete();
 			}
 		}
-		dir.delete();
+		File deldir = new File(dir.getAbsoluteFile()+".del."+System.currentTimeMillis());
+		dir.renameTo(deldir); // Workaround for bad filesystem like Xperia Z... 
+		deldir.delete();
 	}
 
 	public void playPreview() {

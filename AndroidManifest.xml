@@ -43,6 +43,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="jp.nekoteki.android.navivoicechanger.MainMenuActivity" />
         </activity>
+        <activity
+            android:name="jp.nekoteki.android.navivoicechanger.DownloadActivity"
+            android:label="@string/title_activity_download"
+            android:parentActivityName="jp.nekoteki.android.navivoicechanger.MainMenuActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="jp.nekoteki.android.navivoicechanger.MainMenuActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -1,3 +1,6 @@
-/gen
-/bin
-/libs
+/gen/
+/bin/
+*~
+*.bak
+*.orig
+.*.sw[po]

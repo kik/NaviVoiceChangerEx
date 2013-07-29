@@ -28,7 +28,13 @@ public class MainMenuActivity extends Activity {
 			}
 		});
 		
-		findViewById(R.id.btn_download).setEnabled(false);
+		findViewById(R.id.btn_download).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(MainMenuActivity.this, DownloadActivity.class));
+
+			}
+		});
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -210,6 +211,10 @@ public class VoiceData {
 			vd.delete();
 		}
 	}
+	
+	public VoiceData(Context context) {
+		/// nothing to do...
+	}
 
 	public VoiceData(File file, Context context) {
 		if (!file.exists() || !file.isDirectory())
@@ -218,11 +223,31 @@ public class VoiceData {
 		if (!ini.exists())
 			throw new 	IllegalArgumentException("Ini file not found");
 		
+		this.path        = file.getAbsolutePath();
+		try {
+			this.loadIniStream(new FileInputStream(ini), context);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new 	IllegalArgumentException("Specified ini file not found: "+file.getAbsolutePath());
+		}
+	}
+	
+	public VoiceData(InputStream ini_stream, Context context) {
+		this.loadIniStream(ini_stream, context);
+	}
+
+	public void loadIniStream(InputStream ini_stream, Context context) {
 		Properties prop = new Properties();
 		try {
-			prop.load(new InputStreamReader(new FileInputStream(ini), "UTF-8"));
+			prop.load(new InputStreamReader(ini_stream, "UTF-8"));
 		} catch (IOException e) {
+			e.printStackTrace();
 			throw new 	IllegalArgumentException("Failed to load ini file");
+		}
+		try {
+			ini_stream.close();
+		} catch (IOException e) {
+			// ignore
 		}
 		
 		this.context     = context;
@@ -230,7 +255,6 @@ public class VoiceData {
 		this.archive_md5 = prop.getProperty("archive_md5");
 		this.title       = prop.getProperty("title");
 		this.description = prop.getProperty("description");
-		this.path        = file.getAbsolutePath();
 		this.lang        = prop.getProperty("lang");
 		this.unit        = prop.getProperty("unit");
 		try {

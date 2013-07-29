@@ -27,8 +27,13 @@
     <string name="btn_purge_downloaded">Delete all downloaded</string>
     <string name="desc_purge_installed">Voice setting on Navigation will be reset. This action removes installed voice data and all cache files from data directory of Maps.</string>
     <string name="desc_purge_downloaded">Delete all downloaded voice data from THIS APPLICATION (NOT Navigation).</string>
+
     <color name="maint_bg">#fff3f3f3</color>
+
     <string name="msg_installed_removed">Installed data has been removed.</string>
     <string name="msg_downloaded_removed">Downloaded data has been removed.</string>
+    <string name="title_activity_download">DownloadActivity</string>
+    <string name="guide_download">Tap to download. Then push back button to move to install view to install.</string>
+    <string name="download_progress">Donwloading...</string>
 
 </resources>

@@ -50,6 +50,7 @@ public class VoiceData {
 	public final static String UNIT_METRIC = "metric";
 	public final static String UNIT_IMPERIAL = "imperial";
 	public final static String ARCHIVE_FILENAME = "voice_instructions.zip";
+	public static final String PREVIEW_FILESNAME = "preview.ogg";
 
 	protected int id;
 	protected String title;
@@ -67,15 +68,7 @@ public class VoiceData {
 
 		ArrayList<VoiceData> list = new ArrayList<VoiceData>();
 
- 		File baseDir = context.getExternalFilesDir(null);
- 		if (baseDir == null) {
- 			Log.i("VoiceData", "Can't get external storage path.");
- 			return list;
- 		}
-		File vdDir = new File(baseDir, "voicedata");
-		if (!vdDir.isDirectory())
-			vdDir.mkdirs();
-		
+		File vdDir = getBaseDir(context);
 		Log.d(VoiceData.class.getClass().getName(), "Voice Data Dir = "+vdDir.getAbsolutePath());
 		
 		File[] vddlist = vdDir.listFiles();
@@ -95,6 +88,18 @@ public class VoiceData {
 		}
 		
 		return list;
+	}
+	
+	static File getBaseDir(Context context) {
+  		File baseDir = context.getExternalFilesDir(null);
+ 		if (baseDir == null) {
+ 			Log.i("VoiceData", "Can't get external storage path.");
+ 			return null;
+ 		}
+		File vdDir = new File(baseDir, "voicedata");
+		if (!vdDir.isDirectory())
+			vdDir.mkdirs();
+		return vdDir;
 	}
 	
 	static void copyVoiceAssets(Context context) {
@@ -440,7 +445,7 @@ public class VoiceData {
 	}
 
 	public void playPreview() {
-		MediaPlayer.create(this.getContext(), Uri.parse("file://"+this.getPath()+"/preview.ogg")).start();
+		MediaPlayer.create(this.getContext(), Uri.parse("file://"+this.getPath()+"/"+PREVIEW_FILESNAME)).start();
 	}
 
 }

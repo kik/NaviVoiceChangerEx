@@ -1,5 +1,17 @@
 package jp.nekoteki.android.navivoicechanger;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+
+import android.content.Context;
+import android.net.http.AndroidHttpClient;
+import android.util.Log;
+
 public class RemoteVoiceData {
 	protected int id;
 	protected String ini_url;
@@ -10,6 +22,14 @@ public class RemoteVoiceData {
 	protected String unit;
 	protected String author;
 	protected String description;
+	protected boolean downloaded;
+	
+	public void setDownloaded(boolean f) {
+		this.downloaded = f;
+	}
+	public boolean isDownloaded() {
+		return downloaded;
+	}
 	public int getId() {
 		return id;
 	}
@@ -65,5 +85,35 @@ public class RemoteVoiceData {
 		this.description = description;
 	}
 	
+	public void download (Context context) throws IOException {
+		File basedir = VoiceData.getBaseDir(context);
+		if (basedir == null)
+			throw new IOException("Cannot find external strage.");
+		File datadir = new File(basedir, Integer.toString(this.id));
+		if (!datadir.exists()) datadir.mkdirs();
+		this.downloadFile(this.ini_url,     new File(datadir, VoiceData.DATA_INI));
+		this.downloadFile(this.archive_url, new File(datadir, VoiceData.ARCHIVE_FILENAME));
+		this.downloadFile(this.preview_url, new File(datadir, VoiceData.PREVIEW_FILESNAME));
+	}
 	
+	protected void downloadFile(String url, File file) throws IOException {
+		Log.i(this.getClass().toString(), "Start download: "+url+" -> "+file.getAbsolutePath());
+		InputStream is = null;
+		FileOutputStream os = null;
+		AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
+		try {
+			Log.i(this.getClass().toString(), "Loading URL: "+this.ini_url);
+			HttpResponse res;
+			res = client.execute(new HttpGet(url));
+			is = res.getEntity().getContent();
+			os = new FileOutputStream(file);
+			VoiceData.copyStream(is, os);
+		} finally {
+			client.close();
+			if (os != null)
+				os.close();
+			if (is != null)
+				is.close();
+		}
+	}
 }

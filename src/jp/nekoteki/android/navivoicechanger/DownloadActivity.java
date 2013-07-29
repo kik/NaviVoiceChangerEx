@@ -23,8 +23,11 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.AdapterViewFlipper;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -91,7 +94,7 @@ public class DownloadActivity extends Activity {
 						String url = (String) params[0];
 						this.view = (ListView) params[1];
 						this.adapter = (RemoteVoiceDataAdapter) params[2];
-						AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChange");
+						AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
 						Log.i(this.getClass().toString(), "Loading URL: "+url);
 						HttpResponse res;
 						res = client.execute(new HttpGet(url));
@@ -123,9 +126,16 @@ public class DownloadActivity extends Activity {
 						return;
 					}
 
+					List<VoiceData> locals = ((DownloadActivity) this.adapter.context).voice_data_list;
 					Log.d(this.getClass().toString(), "Checking items...");
 					for (RemoteVoiceData rvd: vdlist) {
 						Log.d(this.getClass().toString(), "Item #" + Integer.toString(rvd.getId())+": "+rvd.getTitle());
+						for (VoiceData vd: locals) {
+							if (vd.getId() != rvd.getId())
+								continue;
+							rvd.setDownloaded(true);
+							break;
+						}
 						this.adapter.list.add(rvd);
 					}
 					Log.d(this.getClass().toString(), "Item load done.");
@@ -149,7 +159,7 @@ public class DownloadActivity extends Activity {
 			textlayout.setFocusableInTouchMode(false);
 
 			TextView title = new TextView(context);
-			title.setText(rvd.getTitle());
+			title.setText(rvd.getTitle() + (rvd.isDownloaded() ? " [L]" : " [R]")); // TODO: fix design downloaded marker.
 			title.setTextColor(Color.BLACK);
 			title.setTextSize(16);
 			textlayout.addView(title);
@@ -169,6 +179,7 @@ public class DownloadActivity extends Activity {
 
 	public View list_footer_marker = null;
 	public RemoteVoiceDataAdapter vd_list_adapter;
+	public List<VoiceData> voice_data_list;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -178,7 +189,8 @@ public class DownloadActivity extends Activity {
 		setupActionBar();
 		
 		this.vd_list_adapter = new RemoteVoiceDataAdapter(this); 
-		this.list_footer_marker = getLayoutInflater().inflate(R.layout.list_progress_footer, null); 
+		this.list_footer_marker = getLayoutInflater().inflate(R.layout.list_progress_footer, null);
+		this.voice_data_list = VoiceData.scanVoiceData(this);
 
 		ListView lv = (ListView) findViewById(R.id.download_item_list);
 		lv.addFooterView(this.list_footer_marker);
@@ -194,6 +206,47 @@ public class DownloadActivity extends Activity {
 					int visibleItemCount, int totalItemCount) {
 				if (totalItemCount == firstVisibleItem + visibleItemCount)
 					((DownloadActivity) view.getContext()).vd_list_adapter.loadList(view);
+			}
+		});
+		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> list, View item, int pos, long id) {
+				RemoteVoiceData rvd = (RemoteVoiceData) list.getAdapter().getItem(pos);
+				if (rvd.isDownloaded()) return; // TODO: Show dialog to choice to go to install activity or re-download.
+				
+				((DownloadActivity) list.getContext()).setDownloadOverlay(true);
+				
+				new AsyncTask<Object, Void, Boolean>() {
+					protected DownloadActivity context;
+//					protected int pos;
+//					protected long id;
+					protected RemoteVoiceData rvd;
+					
+					@Override
+					protected Boolean doInBackground(Object... params) {
+						this.context = (DownloadActivity) params[0];
+						this.rvd     = (RemoteVoiceData)  params[1];
+//						this.pos     = ((Integer) params[2]).intValue();
+//						this.id      = ((Long) params[3]).longValue();
+						try {
+							rvd.download(context);
+						} catch (Exception e) {
+							e.printStackTrace();
+							return false;
+						}
+						return true;
+					}
+					
+					protected void onPostExecute(Boolean flag) {
+						if (flag) {
+							this.rvd.setDownloaded(true);
+							context.vd_list_adapter.notifyDataSetChanged();
+						}
+						context.setDownloadOverlay(false);
+					}
+					
+				}.execute(list.getContext(), rvd, pos, id);
 			}
 		});
 	}
@@ -232,7 +285,7 @@ public class DownloadActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	protected void setDownloadState(boolean flag) {
+	protected void setDownloadOverlay(boolean flag) {
 		View view = findViewById(R.id.download_pregrees);
 		if (flag) {
 			view.setVisibility(View.VISIBLE);
@@ -240,6 +293,4 @@ public class DownloadActivity extends Activity {
 			view.setVisibility(View.GONE);
 		}
 	}
-	
-
 }

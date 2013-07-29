@@ -18,7 +18,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -50,6 +49,7 @@ public class InstallListActivity extends Activity {
 		
 		public void rescan() {
 			this.list = VoiceData.scanVoiceData(context);
+			this.notifyDataSetChanged();
 		}
 		
 		@Override
@@ -98,6 +98,7 @@ public class InstallListActivity extends Activity {
 		
 	}
 	
+	protected ListView list_view;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +110,7 @@ public class InstallListActivity extends Activity {
 		VoiceData.copyVoiceAssets(this);
 		 
 		ListView lv = (ListView) findViewById(R.id.voice_list);
+		this.list_view = lv;
 		lv.setAdapter(new ListVoiceDataAdapter(this));
 		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
@@ -188,7 +190,7 @@ public class InstallListActivity extends Activity {
 			break;
 		case C_MENU_DELETE:
 			vd.delete();
-			// TODO: remove item from list.
+			((ListVoiceDataAdapter) this.list_view.getAdapter()).rescan(); // TODO: slow...
 			Toast.makeText(this, R.string.voice_deleted, Toast.LENGTH_SHORT).show();
 			break;
 		case C_MENU_RATE:

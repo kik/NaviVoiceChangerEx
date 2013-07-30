@@ -445,7 +445,9 @@ public class VoiceData {
 	}
 
 	public void playPreview() {
-		MediaPlayer.create(this.getContext(), Uri.parse("file://"+this.getPath()+"/"+PREVIEW_FILESNAME)).start();
+		MediaPlayer player = MediaPlayer.create(this.getContext(), Uri.parse("file://"+this.getPath()+"/"+PREVIEW_FILESNAME));
+		if (player != null)
+			player.start();
 	}
 
 }

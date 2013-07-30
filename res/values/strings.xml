@@ -32,7 +32,7 @@
 
     <string name="msg_installed_removed">Installed data has been removed.</string>
     <string name="msg_downloaded_removed">Downloaded data has been removed.</string>
-    <string name="title_activity_download">DownloadActivity</string>
+    <string name="title_activity_download">Download Voice Data</string>
     <string name="guide_download">Tap to download. Then push back button to move to install view to install.</string>
     <string name="download_progress">Donwloading...</string>
     <string name="err_no_sd">No external storage is detected. You need to check your SD card or storage setting.</string>

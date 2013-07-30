@@ -31,14 +31,13 @@ import android.widget.TextView;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 
 public class DownloadActivity extends Activity {
 	
 	public class RemoteVoiceDataAdapter extends BaseAdapter {
-		final static String SERVER_BASE_URL = "http://tempest.private.nemui.org:3000";
-		
 		protected boolean eol = false;
 		protected Context context;
 		protected List<RemoteVoiceData> list;
@@ -78,8 +77,9 @@ public class DownloadActivity extends Activity {
 		
 		public void loadList(AbsListView view) {
 			if (this.loading || this.eol) return;
+			if (this.loading || this.eol) return;
 			this.loading = true;
-			String url = SERVER_BASE_URL+"/navi_voices.json?page="+Integer.toString(this.cur_page);
+			String url = Config.get(context, "server_url_base") +"/navi_voices.json?page="+Integer.toString(this.cur_page);
 				
 			new AsyncTask<Object, Void, RemoteVoiceData[]>() {
 				protected RemoteVoiceDataAdapter adapter;
@@ -294,5 +294,9 @@ public class DownloadActivity extends Activity {
 		} else {
 			view.setVisibility(View.GONE);
 		}
+	}
+	
+	public void goInstallListFromMenu(MenuItem item) {
+		startActivity(new Intent(DownloadActivity.this, InstallListActivity.class));
 	}
 }

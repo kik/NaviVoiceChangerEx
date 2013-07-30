@@ -14,18 +14,25 @@
         android:id="@+id/btn_menu_install"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:drawableLeft="@android:drawable/ic_menu_add"
+        android:paddingRight="32dp"
         android:text="@string/menu_install" />
 
     <Button
         android:id="@+id/btn_download"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:drawableLeft="@android:drawable/ic_menu_search"
+        android:gravity="center_vertical|center_horizontal"
+        android:paddingRight="32dp"
         android:text="@string/menu_download" />
 
     <Button
         android:id="@+id/btn_menu_maint"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:drawableLeft="@android:drawable/ic_menu_manage"
+        android:paddingRight="32dp"
         android:text="@string/menu_maint" />
 
 </LinearLayout>

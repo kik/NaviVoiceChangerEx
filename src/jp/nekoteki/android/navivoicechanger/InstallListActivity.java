@@ -125,7 +125,6 @@ public class InstallListActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				startActivity(new Intent(InstallListActivity.this, DownloadActivity.class));
-				
 			}
 		});
 	}
@@ -232,5 +231,9 @@ public class InstallListActivity extends Activity {
 			e.printStackTrace();
 		}
 		dialog.show();
+	}
+	
+	public void goDownloadActivityFromMenu(MenuItem item) {
+		startActivity(new Intent(InstallListActivity.this, DownloadActivity.class));
 	}
 }

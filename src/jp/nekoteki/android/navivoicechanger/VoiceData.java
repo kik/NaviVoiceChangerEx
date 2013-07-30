@@ -20,10 +20,14 @@ import java.util.zip.ZipException;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.AssetManager;
+import android.graphics.Paint.Join;
 
 class VoiceDataInstallError extends Exception {};
 class DataDirNotFound extends VoiceDataInstallError {};
@@ -441,8 +445,14 @@ public class VoiceData {
 			// ignore
 		}
 		
-		((android.app.ActivityManager) this.getContext().getSystemService(android.app.Activity.ACTIVITY_SERVICE))
-			.killBackgroundProcesses("com.google.android.apps.maps");
+		ActivityManager am = ((ActivityManager) this.getContext().getSystemService(Activity.ACTIVITY_SERVICE));
+		am.killBackgroundProcesses("com.google.android.apps.maps");
+		for (RunningAppProcessInfo pi: am.getRunningAppProcesses()) {
+			if (pi.processName != "com.google.android.apps.maps")
+				continue;
+			android.os.Process.killProcess(pi.pid);
+		}
+		
 
 		Log.i("VoiceData", "Install finished!");
 	}

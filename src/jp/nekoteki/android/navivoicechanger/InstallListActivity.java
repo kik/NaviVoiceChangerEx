@@ -87,14 +87,25 @@ public class InstallListActivity extends Activity {
 			textlayout.addView(title);
 
 			TextView description = new TextView(context);
-			description.setTextSize(13);
+			description.setTextSize(12);
 			description.setText(vd.getDescription());
 			textlayout.addView(description);
 			
 			container.addView(textlayout);
 			
-			convertView = container;
-			return convertView;
+			TextView author = new TextView(context);
+			if (vd.getAuthor() != null && !vd.getAuthor().equals("")) {
+				author.setTextSize(14);
+				author.setText("By "+vd.getAuthor());
+				RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+				lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+				author.setLayoutParams(lp);
+				container.addView(author);
+			}
+
+			
+			return container;
 		}
 		
 	}

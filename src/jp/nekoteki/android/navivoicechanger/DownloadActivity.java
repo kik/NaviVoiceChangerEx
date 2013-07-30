@@ -14,8 +14,10 @@ import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,6 +39,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 
 public class DownloadActivity extends Activity {
@@ -172,20 +175,44 @@ public class DownloadActivity extends Activity {
 			textlayout.setFocusableInTouchMode(false);
 
 			TextView title = new TextView(context);
-			title.setText(rvd.getTitle() + (rvd.isDownloaded() ? " [L]" : " [R]")); // TODO: fix design downloaded marker.
+			title.setText(rvd.getTitle());
 			title.setTextColor(Color.BLACK);
 			title.setTextSize(16);
 			textlayout.addView(title);
 
 			TextView description = new TextView(context);
-			description.setTextSize(13);
+			description.setTextSize(12);
 			description.setText(rvd.getDescription());
 			textlayout.addView(description);
-			
 			container.addView(textlayout);
-			
-			convertView = container;
-			return convertView;
+
+			TextView downloaded = new TextView(context);
+			if (rvd.isDownloaded()) {
+				Drawable dmark = getResources().getDrawable(android.R.drawable.checkbox_on_background);
+				dmark.setBounds(0, 0, 20, 20);
+				downloaded.setCompoundDrawables(dmark, null, null, null);
+				RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+				lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+				downloaded.setLayoutParams(lp);
+				container.addView(downloaded);
+			}
+
+			TextView author = new TextView(context);
+			if (rvd.getAuthor() != null && !rvd.getAuthor().equals("")) {
+				author.setTextSize(14);
+				author.setText("By "+rvd.getAuthor());
+				RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+				lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+				if (rvd.isDownloaded()) {
+					lp.setMargins(0, 0, 22, 0);
+				}
+				author.setLayoutParams(lp);
+				container.addView(author);
+			}
+
+			return container;
 		}
 		
 	}

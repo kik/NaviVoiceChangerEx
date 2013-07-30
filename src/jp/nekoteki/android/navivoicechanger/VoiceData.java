@@ -62,6 +62,7 @@ public class VoiceData {
 	protected String lang;
 	protected String path;
 	protected int version;
+	protected String author;
 	protected Context context;
 	
 	static List<VoiceData> scanVoiceData(Context context) {
@@ -268,6 +269,7 @@ public class VoiceData {
 		this.description = prop.getProperty("description");
 		this.lang        = prop.getProperty("lang");
 		this.unit        = prop.getProperty("unit");
+		this.author      = prop.getProperty("author");
 		try {
 			this.rating  = Float.parseFloat(prop.getProperty("rating"));
 		} catch (Exception e) {
@@ -358,6 +360,14 @@ public class VoiceData {
 
 	public void setVersion(int version) {
 		this.version = version;
+	}
+	
+	public void setAuthor(String a) {
+		this.author = a;
+	}
+	
+	public String getAuthor() {
+		return author;
 	}
 
 	public void validate() throws BrokenArchive {

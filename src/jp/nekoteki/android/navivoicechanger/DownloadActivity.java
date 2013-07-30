@@ -15,12 +15,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -28,6 +31,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -63,6 +67,13 @@ public class DownloadActivity extends Activity {
 		@Override
 		public long getItemId(int position) {
 			return ((RemoteVoiceData) this.getItem(position)).getId();
+		}
+		
+		public RemoteVoiceData getItemById(int id) {
+			for (RemoteVoiceData rvd: this.list) {
+				if (rvd.getId() == id) return rvd;
+			}
+			return null;
 		}
 		
 		public void reset() {
@@ -135,7 +146,7 @@ public class DownloadActivity extends Activity {
 						for (VoiceData vd: locals) {
 							if (vd.getId() != rvd.getId())
 								continue;
-							rvd.setDownloaded(true);
+							rvd.setVoiceData(vd);
 							break;
 						}
 						this.adapter.list.add(rvd);
@@ -179,8 +190,14 @@ public class DownloadActivity extends Activity {
 		
 	}
 
+	private static final int C_MENU_PREVIEW = 0;
+	private static final int C_MENU_DOWNLOAD = 1;
+	private static final int C_MENU_INSTALL = 2;
+	private static final int C_MENU_RATE = 3;
+	private static final int C_MENU_DELETE = 4;
+
 	public View list_footer_marker = null;
-	public RemoteVoiceDataAdapter vd_list_adapter;
+	public RemoteVoiceDataAdapter rvd_list_adapter;
 	public List<VoiceData> voice_data_list;
 	
 	@Override
@@ -190,13 +207,13 @@ public class DownloadActivity extends Activity {
 		// Show the Up button in the action bar.
 		setupActionBar();
 		
-		this.vd_list_adapter = new RemoteVoiceDataAdapter(this); 
+		this.rvd_list_adapter = new RemoteVoiceDataAdapter(this); 
 		this.list_footer_marker = getLayoutInflater().inflate(R.layout.list_progress_footer, null);
-		this.voice_data_list = VoiceData.scanVoiceData(this);
+		this.scanVoiceData();
 
 		ListView lv = (ListView) findViewById(R.id.download_item_list);
 		lv.addFooterView(this.list_footer_marker);
-		lv.setAdapter(this.vd_list_adapter);
+		lv.setAdapter(this.rvd_list_adapter);
 		lv.setOnScrollListener(new OnScrollListener() {
 			@Override
 			public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -207,50 +224,22 @@ public class DownloadActivity extends Activity {
 			public void onScroll(AbsListView view, int firstVisibleItem,
 					int visibleItemCount, int totalItemCount) {
 				if (totalItemCount == firstVisibleItem + visibleItemCount)
-					((DownloadActivity) view.getContext()).vd_list_adapter.loadList(view);
+					((DownloadActivity) view.getContext()).rvd_list_adapter.loadList(view);
 			}
 		});
-		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
+		registerForContextMenu(lv);
+
+		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> list, View item, int pos, long id) {
-				RemoteVoiceData rvd = (RemoteVoiceData) list.getAdapter().getItem(pos);
-				if (rvd.isDownloaded()) return; // TODO: Show dialog to choice to go to install activity or re-download.
-				
-				((DownloadActivity) list.getContext()).setDownloadOverlay(true);
-				
-				new AsyncTask<Object, Void, Boolean>() {
-					protected DownloadActivity context;
-//					protected int pos;
-//					protected long id;
-					protected RemoteVoiceData rvd;
-					
-					@Override
-					protected Boolean doInBackground(Object... params) {
-						this.context = (DownloadActivity) params[0];
-						this.rvd     = (RemoteVoiceData)  params[1];
-//						this.pos     = ((Integer) params[2]).intValue();
-//						this.id      = ((Long) params[3]).longValue();
-						try {
-							rvd.download(context);
-						} catch (Exception e) {
-							e.printStackTrace();
-							return false;
-						}
-						return true;
-					}
-					
-					protected void onPostExecute(Boolean flag) {
-						if (flag) {
-							this.rvd.setDownloaded(true);
-							context.vd_list_adapter.notifyDataSetChanged();
-						}
-						context.setDownloadOverlay(false);
-					}
-					
-				}.execute(list.getContext(), rvd, pos, id);
+				item.performLongClick();
 			}
 		});
+	}
+	
+	protected void scanVoiceData() {
+		this.voice_data_list = VoiceData.scanVoiceData(getApplicationContext());
 	}
 
 	/**
@@ -299,4 +288,79 @@ public class DownloadActivity extends Activity {
 	public void goInstallListFromMenu(MenuItem item) {
 		startActivity(new Intent(DownloadActivity.this, InstallListActivity.class));
 	}
+
+	public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo info) {
+		super.onCreateContextMenu(menu, view, info);
+		AdapterContextMenuInfo ainfo = (AdapterContextMenuInfo) info;
+		ListView listView = (ListView)view;
+		
+		RemoteVoiceData rvd = (RemoteVoiceData) listView.getItemAtPosition(ainfo.position);
+		menu.setHeaderTitle(rvd.getTitle());
+		menu.add(rvd.getId(), C_MENU_PREVIEW,  0, R.string.c_menu_preview);
+		menu.add(rvd.getId(), C_MENU_DOWNLOAD, 0, R.string.c_menu_download);
+		menu.add(rvd.getId(), C_MENU_INSTALL,  0, R.string.c_menu_install);
+		menu.add(rvd.getId(), C_MENU_RATE,     0, R.string.c_menu_rate);
+		menu.add(rvd.getId(), C_MENU_DELETE,   0, R.string.c_menu_delete);
+
+		if (rvd.isDownloaded()) {
+			menu.getItem(C_MENU_DOWNLOAD).setEnabled(false);
+		} else {
+			menu.getItem(C_MENU_INSTALL).setEnabled(false);
+			menu.getItem(C_MENU_DELETE).setEnabled(false);
+			menu.getItem(C_MENU_RATE).setEnabled(false);
+		}
+	}
+	
+	public boolean onContextItemSelected(MenuItem item) {
+		RemoteVoiceData rvd = this.rvd_list_adapter.getItemById(item.getGroupId());
+		if (rvd == null) return true;
+		switch (item.getItemId()) {
+		case C_MENU_PREVIEW:
+			rvd.playPreview(this.getApplicationContext());
+			break;
+		case C_MENU_DOWNLOAD:
+			if (rvd.isDownloaded()) return true;
+			this.setDownloadOverlay(true);
+			
+			new AsyncTask<Object, Void, Boolean>() {
+				protected DownloadActivity context;
+				protected RemoteVoiceData rvd;
+				
+				@Override
+				protected Boolean doInBackground(Object... params) {
+					this.context = (DownloadActivity) params[0];
+					this.rvd     = (RemoteVoiceData)  params[1];
+					try {
+						rvd.download(context);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return false;
+					}
+					return true;
+				}
+				
+				protected void onPostExecute(Boolean flag) {
+					if (this.rvd.isDownloaded())
+						context.rvd_list_adapter.notifyDataSetChanged();
+					context.setDownloadOverlay(false);
+				}
+			}.execute(this, rvd);
+			break;
+		case C_MENU_INSTALL:
+			if (rvd.isDownloaded())
+				rvd.getVoiceData().installAndShowResults(this);
+			break;
+		case C_MENU_DELETE:
+			rvd.delete();
+			this.rvd_list_adapter.notifyDataSetChanged();
+			Toast.makeText(this, R.string.voice_deleted, Toast.LENGTH_SHORT).show();
+			break;
+		case C_MENU_RATE:
+			// TODO: implement!
+			Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show();
+			break;
+		}
+		return true;
+	}
+
 }

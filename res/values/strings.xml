@@ -37,5 +37,6 @@
     <string name="download_progress">Donwloading...</string>
     <string name="err_no_sd">No external storage is detected. You need to check your SD card or storage setting.</string>
     <string name="err_no_sd_title">Medium Error</string>
+    <string name="c_menu_download">Download</string>
 
 </resources>

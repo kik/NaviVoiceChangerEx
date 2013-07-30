@@ -172,12 +172,12 @@ public class InstallListActivity extends Activity {
 		menu.setHeaderTitle(vd.getTitle());
 		menu.add(vd.getId(), C_MENU_PREVIEW, 0, R.string.c_menu_preview);
 		menu.add(vd.getId(), C_MENU_INSTALL, 0, R.string.c_menu_install);
-		menu.add(vd.getId(), C_MENU_RATE, 0, R.string.c_menu_rate);
-		menu.add(vd.getId(), C_MENU_DELETE, 0, R.string.c_menu_delete);
+		menu.add(vd.getId(), C_MENU_RATE,    0, R.string.c_menu_rate);
+		menu.add(vd.getId(), C_MENU_DELETE,  0, R.string.c_menu_delete);
 
 		if (vd.getId() < 1) {
-			menu.getItem(2).setEnabled(false);
-			menu.getItem(3).setEnabled(false);
+			menu.getItem(C_MENU_RATE).setEnabled(false);
+			menu.getItem(C_MENU_DELETE).setEnabled(false);
 		}
 	}
 	

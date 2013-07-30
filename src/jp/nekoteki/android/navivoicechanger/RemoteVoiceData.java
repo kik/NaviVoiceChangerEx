@@ -9,6 +9,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 
 import android.content.Context;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.net.http.AndroidHttpClient;
 import android.util.Log;
 
@@ -22,13 +24,16 @@ public class RemoteVoiceData {
 	protected String unit;
 	protected String author;
 	protected String description;
-	protected boolean downloaded;
+	protected VoiceData voice_data;
 	
-	public void setDownloaded(boolean f) {
-		this.downloaded = f;
+	public VoiceData getVoiceData() {
+		return voice_data;
+	}
+	public void setVoiceData(VoiceData v) {
+		this.voice_data = v;
 	}
 	public boolean isDownloaded() {
-		return downloaded;
+		return this.voice_data != null;
 	}
 	public int getId() {
 		return id;
@@ -94,6 +99,7 @@ public class RemoteVoiceData {
 		this.downloadFile(this.ini_url,     new File(datadir, VoiceData.DATA_INI));
 		this.downloadFile(this.archive_url, new File(datadir, VoiceData.ARCHIVE_FILENAME));
 		this.downloadFile(this.preview_url, new File(datadir, VoiceData.PREVIEW_FILESNAME));
+		this.setVoiceData(new VoiceData(datadir, context));
 	}
 	
 	protected void downloadFile(String url, File file) throws IOException {
@@ -114,6 +120,22 @@ public class RemoteVoiceData {
 				os.close();
 			if (is != null)
 				is.close();
+		}
+	}
+	
+	public void delete() {
+		if (!this.isDownloaded()) return;
+		this.getVoiceData().delete();
+		this.setVoiceData(null);
+	}
+	
+	public void playPreview(Context context) {
+		if (this.isDownloaded()) {
+			this.getVoiceData().playPreview();
+		} else {
+			MediaPlayer player = MediaPlayer.create(context, Uri.parse(this.getPreview_url()));
+			if (player != null)
+				player.start();
 		}
 	}
 }

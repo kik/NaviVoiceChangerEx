@@ -87,11 +87,11 @@ public class DownloadActivity extends Activity {
 
 				@Override
 				protected RemoteVoiceData[] doInBackground(Object... params) {
+					AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
 					try {
 						String url = (String) params[0];
 						this.view = (ListView) params[1];
 						this.adapter = (RemoteVoiceDataAdapter) params[2];
-						AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
 						Log.i(this.getClass().toString(), "Loading URL: "+url);
 						HttpResponse res;
 						res = client.execute(new HttpGet(url));
@@ -99,7 +99,6 @@ public class DownloadActivity extends Activity {
 						InputStream json_stream = res.getEntity().getContent();
 						RemoteVoiceData[] vdlist = JSON.decode(json_stream, RemoteVoiceData[].class);
 						json_stream.close();
-						client.close();
 						return vdlist;
 					} catch (IOException e) {
 						Log.d(this.getClass().toString(), "Failed to load from server.");
@@ -109,6 +108,12 @@ public class DownloadActivity extends Activity {
 						Log.e(this.getClass().toString(), "Unknwon Exception in AsyncTask!!");
 						e.printStackTrace();
 						return null;
+					} finally {
+						try {
+							client.close();
+						} catch (Exception e) {
+							// ignore
+						}
 					}
  				}
 

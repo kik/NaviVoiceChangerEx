@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +20,7 @@ import java.util.zip.ZipException;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.AssetManager;
 
@@ -69,6 +69,7 @@ public class VoiceData {
 		ArrayList<VoiceData> list = new ArrayList<VoiceData>();
 
 		File vdDir = getBaseDir(context);
+		if (vdDir == null) return list;
 		Log.d(VoiceData.class.getClass().getName(), "Voice Data Dir = "+vdDir.getAbsolutePath());
 		
 		File[] vddlist = vdDir.listFiles();
@@ -94,6 +95,10 @@ public class VoiceData {
   		File baseDir = context.getExternalFilesDir(null);
  		if (baseDir == null) {
  			Log.i("VoiceData", "Can't get external storage path.");
+ 			AlertDialog.Builder builder = new AlertDialog.Builder(context);
+ 			builder.setMessage(R.string.err_no_sd).setTitle(R.string.err_no_sd_title);
+ 			AlertDialog dialog = builder.create();
+ 			dialog.show();
  			return null;
  		}
 		File vdDir = new File(baseDir, "voicedata");

@@ -3,7 +3,6 @@ package jp.nekoteki.android.navivoicechanger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import net.arnx.jsonic.JSON;
@@ -24,10 +23,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.AdapterViewFlipper;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;

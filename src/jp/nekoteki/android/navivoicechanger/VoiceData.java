@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.AssetManager;
 
 class VoiceDataInstallError extends Exception {};
@@ -436,6 +437,40 @@ public class VoiceData {
 		Log.i("VoiceData", "Install finished!");
 	}
 	
+	public void installAndShowResults(Context context) {
+		try {
+			this.install();
+		} catch (Exception e){
+			this.showInstallResult(e, context);
+			return;
+		}
+		this.showInstallResult(null, context);
+	}
+
+	public void showInstallResult(Exception e, Context context) {
+		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+		dialog.setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) { }
+		});
+		dialog.setTitle(R.string.install_error);
+		if (e == null) {
+			dialog.setTitle(R.string.install_success);
+			dialog.setMessage(R.string.install_success_message);
+		} else if (e instanceof BrokenArchive || e instanceof ZipException) {
+			dialog.setMessage(R.string.err_broken_archive);
+		} else if (e instanceof DataDirNotFound) {
+			dialog.setMessage(R.string.err_no_target);
+		} else if (e instanceof IOException) {
+			dialog.setMessage(R.string.err_fileio);
+		} else {
+			dialog.setMessage(R.string.err_unknown);
+			Log.e("VoiceData", "Unknown Erorr on install!! ");
+			e.printStackTrace();
+		}
+		dialog.show();
+	}
+
 	public void delete() {
 		File dir = new File(this.getPath());
 		File[] files = dir.listFiles();

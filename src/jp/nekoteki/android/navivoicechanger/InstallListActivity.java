@@ -189,12 +189,7 @@ public class InstallListActivity extends Activity {
 			vd.playPreview();
 			break;
 		case C_MENU_INSTALL:
-			try {
-				vd.install();
-				this.showInstallResult(null);
-			} catch (Exception e) {
-				this.showInstallResult(e);
-			}
+			vd.installAndShowResults(this);
 			break;
 		case C_MENU_DELETE:
 			vd.delete();
@@ -209,30 +204,6 @@ public class InstallListActivity extends Activity {
 		return true;
 	}
 
-	public void showInstallResult(Exception e) {
-		AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-		dialog.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface arg0, int arg1) { }							
-		});
-		dialog.setTitle(R.string.install_error);
-		if (e == null) {
-			dialog.setTitle(R.string.install_success);
-			dialog.setMessage(R.string.install_success_message);
-		} else if (e instanceof BrokenArchive || e instanceof ZipException) {
-			dialog.setMessage(R.string.err_broken_archive);
-		} else if (e instanceof DataDirNotFound) {
-			dialog.setMessage(R.string.err_no_target);
-		} else if (e instanceof IOException) {
-			dialog.setMessage(R.string.err_fileio);
-		} else {
-			dialog.setMessage(R.string.err_unknown);
-			Log.e("Inatall Activity", "Unknown Erorr!! ");
-			e.printStackTrace();
-		}
-		dialog.show();
-	}
-	
 	public void goDownloadActivityFromMenu(MenuItem item) {
 		startActivity(new Intent(InstallListActivity.this, DownloadActivity.class));
 	}

@@ -27,6 +27,7 @@ import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 
@@ -119,6 +120,14 @@ public class InstallListActivity extends Activity {
 			}
 		});
 		registerForContextMenu(lv);
+		
+		findViewById(R.id.btn_download).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				startActivity(new Intent(InstallListActivity.this, DownloadActivity.class));
+				
+			}
+		});
 	}
 
 	/**

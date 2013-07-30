@@ -30,5 +30,10 @@
     <color name="maint_bg">#fff3f3f3</color>
     <string name="msg_installed_removed">音声データを削除しました。</string>
     <string name="msg_downloaded_removed">ダウンロードしたデータを削除しました。</string>
-
+    <string name="title_activity_download">音声データのダウンロード</string>
+    <string name="download_progress">ダウンロード中...</string>
+    <string name="err_no_sd">外部ストレージが見つかりません。SDカードをチェックするか、ストレージの設定を確認してください。</string>
+    <string name="err_no_sd_title">メディアエラー</string>
+    <string name="c_menu_download">ダウンロード</string>
+    
 </resources>

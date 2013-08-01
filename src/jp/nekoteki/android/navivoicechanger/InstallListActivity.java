@@ -104,7 +104,7 @@ public class InstallListActivity extends Activity {
 				container.addView(author);
 			}
 
-			
+			container.setPadding(0, 5, 0, 5);
 			return container;
 		}
 		

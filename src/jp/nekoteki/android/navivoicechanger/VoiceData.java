@@ -57,17 +57,17 @@ public class VoiceData {
 	public final static String ARCHIVE_FILENAME = "voice_instructions.zip";
 	public static final String PREVIEW_FILESNAME = "preview.ogg";
 
-	protected int id;
-	protected String title;
-	protected float rating;
-	protected String description;
-	protected String archive_md5;
-	protected String unit;
-	protected String lang;
-	protected String path;
-	protected int version;
-	protected String author;
-	protected Context context;
+	private int id;
+	private String title;
+	private float rating;
+	private String description;
+	private String archive_md5;
+	private String unit;
+	private String lang;
+	private String path;
+	private int version;
+	private String author;
+	private Context context;
 	
 	static List<VoiceData> scanVoiceData(Context context) {
 		Log.d(VoiceData.class.getClass().getName(), "Start voice data dir scan.");
@@ -445,15 +445,7 @@ public class VoiceData {
 			// ignore
 		}
 		
-		ActivityManager am = ((ActivityManager) this.getContext().getSystemService(Activity.ACTIVITY_SERVICE));
-		am.killBackgroundProcesses("com.google.android.apps.maps");
-		for (RunningAppProcessInfo pi: am.getRunningAppProcesses()) {
-			if (pi.processName != "com.google.android.apps.maps")
-				continue;
-			android.os.Process.killProcess(pi.pid);
-		}
-		
-
+		StaticUtils.killMapsProcess(this.getContext());
 		Log.i("VoiceData", "Install finished!");
 	}
 	

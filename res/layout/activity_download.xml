@@ -37,22 +37,29 @@
         android:orientation="vertical"
         android:visibility="gone" >
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyle"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:padding="16dp" />
+            android:layout_centerInParent="true" >
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/progressBar"
-            android:text="@string/download_progress"
-            android:textColor="@android:color/white"
-            android:textSize="24sp" />
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:padding="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/download_progress"
+                android:textColor="@android:color/white"
+                android:textSize="24sp" />
+
+        </LinearLayout>
+
     </RelativeLayout>
 
 </RelativeLayout>

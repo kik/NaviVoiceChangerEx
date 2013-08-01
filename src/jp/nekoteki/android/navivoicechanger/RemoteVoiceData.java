@@ -15,16 +15,16 @@ import android.net.http.AndroidHttpClient;
 import android.util.Log;
 
 public class RemoteVoiceData {
-	protected int id;
-	protected String ini_url;
-	protected String archive_url;
-	protected String preview_url;
-	protected float rating;
-	protected String title;
-	protected String unit;
-	protected String author;
-	protected String description;
-	protected VoiceData voice_data;
+	private int id;
+	private String ini_url;
+	private String archive_url;
+	private String preview_url;
+	private float rating;
+	private String title;
+	private String unit;
+	private String author;
+	private String description;
+	private VoiceData voice_data;
 	
 	public VoiceData getVoiceData() {
 		return voice_data;

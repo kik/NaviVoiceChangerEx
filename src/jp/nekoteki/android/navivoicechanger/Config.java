@@ -45,7 +45,7 @@ public class Config {
 		}
 	}
 	
-	public static Properties getProp(Context context) {
+	private static Properties getProp(Context context) {
 		Properties prop = new Properties();
 		File conf = getConfFile(context);
 		if (conf == null) return prop;
@@ -59,7 +59,7 @@ public class Config {
 		return prop;
 	}
 	
-	public static File getConfFile(Context context) {
+	private static File getConfFile(Context context) {
 		File dir = context.getExternalFilesDir(null);
 		if (dir == null) return null;
 		if (!dir.exists()) dir.mkdirs();

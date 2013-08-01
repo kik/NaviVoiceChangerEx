@@ -4,8 +4,8 @@
     <string name="app_name">ナビボイスチェンジャー</string>
     <string name="action_settings">設定</string>
     <string name="hello_world">Hello world!</string>
-    <string name="menu_install">音声データのインストール</string>
-    <string name="menu_download">音声データのダウンロード</string>
+    <string name="menu_install">音声のインストール</string>
+    <string name="menu_download">音声のダウンロード</string>
     <string name="menu_maint">メンテナンス</string>
     <string name="title_activity_install_list">音声データのインストール</string>
     <string name="err_broken_archive">音声データが壊れています。ダウンロードしなおしてください。</string>
@@ -35,5 +35,10 @@
     <string name="err_no_sd">外部ストレージが見つかりません。SDカードをチェックするか、ストレージの設定を確認してください。</string>
     <string name="err_no_sd_title">メディアエラー</string>
     <string name="c_menu_download">ダウンロード</string>
+    <string name="accept">わかった</string>
+    <string name="decline">断る!</string>
+    <string name="tos_title">おことわり</string>
+    <string name="tos">ダウンロードありがとうございます。すみませんが使うにあたり、以下に注意してください。\n\nこのアプリはマップと Android OS の現状の挙動に固定的に依存しています。それらは非公開のものであるため、将来の変更時にこのアプリは動作しなくなります。その場合の対応は全く保証できません。</string>
+    
     
 </resources>

@@ -28,6 +28,7 @@ public class MaintActivity extends Activity {
 				progress.setMessage("Purging files...");
 				progress.show();
 				VoiceData.purgeVoiceDataFromNavi(v.getContext());
+				StaticUtils.killMapsProcess(v.getContext());
 				progress.dismiss();
 				Toast.makeText(v.getContext(), R.string.msg_installed_removed, Toast.LENGTH_SHORT).show();
 			}

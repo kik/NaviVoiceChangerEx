@@ -40,6 +40,6 @@
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
     <string name="tos_title">Notice</string>
-    <string name="tos">Thank you for downloading! Please keep mind following terms;\n\nThis app is depends on CURRENT behavior of Maps and Android OS statically. These are closed and un-documented, then this app WILL STOP WORKING on future changes. In that case, I can NOT promise to contienu to support.</string>
+    <string name="tos">Thank you for downloading! Please keep mind following terms;\n\nThis app is depends on CURRENT behavior of Maps and Android OS statically. These are closed and un-documented, then this app WILL STOP WORKING on future changes. In that case, I can NOT promise to continue to support.</string>
 
 </resources>

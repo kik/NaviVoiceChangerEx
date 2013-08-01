@@ -55,6 +55,7 @@ public class VoiceData {
 	public final static String UNIT_METRIC = "metric";
 	public final static String UNIT_IMPERIAL = "imperial";
 	public final static String ARCHIVE_FILENAME = "voice_instructions.zip";
+	public final static String ARCHIVE_FILENAME_IMPERIAL = "voice_instructions_imperial.zip";
 	public static final String PREVIEW_FILESNAME = "preview.ogg";
 
 	private int id;
@@ -439,7 +440,9 @@ public class VoiceData {
 		try {
 			for (File localedir: getTargetVoiceDataDir(this.getContext()).listFiles()) {
 				if (!localedir.isDirectory()) continue;
+				// To make sure, just copy to both...
 				copyFile(voice_archive, new File(localedir, ARCHIVE_FILENAME));
+				copyFile(voice_archive, new File(localedir, ARCHIVE_FILENAME_IMPERIAL));
 			}
 		} catch (NullPointerException e) {
 			// ignore

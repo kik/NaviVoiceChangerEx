@@ -44,5 +44,13 @@
     <string name="rate_for">評価: </string>
     <string name="sent_failed">送信に失敗しました</string>
     <string name="download_failed">ダウンロードに失敗しました</string>
-    <string name="download_success">ダウンロード完了しました</string>
+    <string name="download_success">ダウンロードが完了しました</string>
+    <string name="btn_dl_opts">リストオプションの変更</string>
+    <string name="dlopt_sort_order">並び順</string>
+    <string name="dlopt_text_search">テキスト検索</string>
+    <string name="dlopt_order_time">アップロード日時</string>
+    <string name="dlopt_order_rating">評価</string>
+    <string name="dlopt_order_dlcount">ダウンロード回数</string>
+    <string name="apply">適用</string>
+    <string name="dllist_opts_title">リストオプション</string>
 </resources>

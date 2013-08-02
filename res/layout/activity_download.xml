@@ -2,31 +2,33 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/shadow_down"
-        android:orientation="vertical" >
-
-    </LinearLayout>
-
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/RelativeLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:orientation="vertical"
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin" >
 
+        <Button
+            android:id="@+id/btn_dl_opts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="@string/btn_dl_opts" />
+
         <ListView
             android:id="@+id/download_item_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:layout_above="@id/btn_dl_opts"
+            android:layout_alignParentTop="true" >
+
         </ListView>
-    </LinearLayout>
+
+    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/download_pregrees"
@@ -57,9 +59,7 @@
                 android:text="@string/download_progress"
                 android:textColor="@android:color/white"
                 android:textSize="24sp" />
-
         </LinearLayout>
-
     </RelativeLayout>
 
 </RelativeLayout>

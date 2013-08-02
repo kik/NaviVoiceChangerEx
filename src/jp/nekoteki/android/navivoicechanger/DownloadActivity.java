@@ -2,6 +2,8 @@ package jp.nekoteki.android.navivoicechanger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -27,14 +30,17 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -48,12 +54,18 @@ public class DownloadActivity extends Activity {
 		protected List<RemoteVoiceData> list;
 		protected int cur_page = 1; 
 		protected boolean loading = false;
+		protected String q;
+		protected String order = "time";
 
 		public RemoteVoiceDataAdapter(Context context) {
 			super();
 			this.context = context;
 			this.reset();
  		}
+		
+		public String getOrder() {
+			return this.order;
+		}
 		
 		@Override
 		public int getCount() {
@@ -91,7 +103,15 @@ public class DownloadActivity extends Activity {
 			if (this.loading || this.eol) return;
 			if (this.loading || this.eol) return;
 			this.loading = true;
-			String url = Config.get(context, "server_url_base") +"/navi_voices.json?page="+Integer.toString(this.cur_page);
+			String url = Config.get(context, "server_url_base") +"/navi_voices.json?page="+Integer.toString(this.cur_page)+"&order="+this.order;
+			if (this.q != null && !this.q.equals("")) {
+				try {
+					url += "&q="+URLEncoder.encode(q, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					// ignore
+					e.printStackTrace();
+				}
+			}
 				
 			new AsyncTask<Object, Void, RemoteVoiceData[]>() {
 				protected RemoteVoiceDataAdapter adapter;
@@ -260,6 +280,49 @@ public class DownloadActivity extends Activity {
 			@Override
 			public void onItemClick(AdapterView<?> list, View item, int pos, long id) {
 				item.performLongClick();
+			}
+		});
+		
+		findViewById(R.id.btn_dl_opts).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder dialog = new AlertDialog.Builder(DownloadActivity.this);
+				class DlOptsApplyClkListener implements DialogInterface.OnClickListener {
+					public View opt_view;
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						RemoteVoiceDataAdapter rvd_adpt = DownloadActivity.this.rvd_list_adapter;
+						if (((RadioButton) opt_view.findViewById(R.id.dlopt_order_dlcount)).isChecked()) {
+							rvd_adpt.order = "dlcount";
+						} else if (((RadioButton) opt_view.findViewById(R.id.dlopt_order_rating)).isChecked()) {
+							rvd_adpt.order = "rating";
+						} else {
+							rvd_adpt.order = "time";
+						}
+						rvd_adpt.q = ((EditText) opt_view.findViewById(R.id.dlopt_filter_q)).getText().toString();
+						rvd_adpt.reset();
+					}
+				}
+				DlOptsApplyClkListener apply_hdl = new DlOptsApplyClkListener();
+				apply_hdl.opt_view = View.inflate(DownloadActivity.this, R.layout.dl_filter, null);
+				RemoteVoiceDataAdapter rvd_adpt = DownloadActivity.this.rvd_list_adapter;
+				if (rvd_adpt.order == "dlcount") {
+					((RadioButton) apply_hdl.opt_view.findViewById(R.id.dlopt_order_dlcount)).setChecked(true);
+				} else if (rvd_adpt.order == "rating") {
+					((RadioButton) apply_hdl.opt_view.findViewById(R.id.dlopt_order_rating)).setChecked(true);
+				} else {
+					((RadioButton) apply_hdl.opt_view.findViewById(R.id.dlopt_order_time)).setChecked(true);
+				}
+				((EditText) apply_hdl.opt_view.findViewById(R.id.dlopt_filter_q)).setText(rvd_adpt.q);
+				
+				dialog.setPositiveButton(R.string.apply, apply_hdl);
+				dialog.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) { }
+				});
+				dialog.setTitle(R.string.dllist_opts_title);
+				dialog.setView(apply_hdl.opt_view);
+				dialog.show();
 			}
 		});
 	}

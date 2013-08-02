@@ -47,5 +47,13 @@
     <string name="sent_failed">Send failed.</string>
     <string name="download_failed">Download Failed.</string>
     <string name="download_success">Download completed</string>
+    <string name="btn_dl_opts">Change List Options</string>
+    <string name="dlopt_sort_order">Sort order</string>
+    <string name="dlopt_text_search">Text search</string>
+    <string name="dlopt_order_time">By upload time</string>
+    <string name="dlopt_order_rating">By rating score</string>
+    <string name="dlopt_order_dlcount">By download count</string>
+    <string name="apply">Apply</string>
+    <string name="dllist_opts_title">List options</string>
 
 </resources>

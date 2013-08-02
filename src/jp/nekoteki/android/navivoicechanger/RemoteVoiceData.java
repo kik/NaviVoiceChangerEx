@@ -111,6 +111,11 @@ public class RemoteVoiceData {
 			Log.i(this.getClass().toString(), "Loading URL: "+this.ini_url);
 			HttpResponse res;
 			res = client.execute(new HttpGet(url));
+			if (res.getStatusLine().getStatusCode() != 200) {
+				String msg = "Server returns bad status code: "+ Integer.toString(res.getStatusLine().getStatusCode());
+				Log.e("VoiceData", msg);
+				throw new IOException(msg);
+			}
 			is = res.getEntity().getContent();
 			os = new FileOutputStream(file);
 			VoiceData.copyStream(is, os);

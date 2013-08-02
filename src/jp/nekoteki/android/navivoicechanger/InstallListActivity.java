@@ -1,13 +1,9 @@
 package jp.nekoteki.android.navivoicechanger;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.zip.ZipException;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -26,7 +22,6 @@ import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
@@ -208,8 +203,7 @@ public class InstallListActivity extends Activity {
 			Toast.makeText(this, R.string.voice_deleted, Toast.LENGTH_SHORT).show();
 			break;
 		case C_MENU_RATE:
-			// TODO: implement!
-			Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show();
+			vd.promptToRate(this);
 			break;
 		}
 		return true;

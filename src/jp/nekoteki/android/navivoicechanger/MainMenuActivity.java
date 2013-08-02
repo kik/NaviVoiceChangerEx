@@ -1,14 +1,12 @@
 package jp.nekoteki.android.navivoicechanger;
 
-import java.io.IOException;
-import java.util.zip.ZipException;
+import java.util.UUID;
 
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 
@@ -62,6 +60,11 @@ public class MainMenuActivity extends Activity {
 			dialog.setMessage(R.string.tos);
 			dialog.show();
 		} 
+
+		String ident = Config.get(getApplicationContext(), "ident");
+		if (ident == null || ident.equals("")) {
+			Config.set(getApplicationContext(), "ident", "nvcapp:"+UUID.randomUUID().toString());
+		}
 	}
 
 	@Override

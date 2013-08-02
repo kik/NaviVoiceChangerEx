@@ -14,10 +14,8 @@ import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
-import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -115,7 +113,7 @@ public class DownloadActivity extends Activity {
 						json_stream.close();
 						return vdlist;
 					} catch (IOException e) {
-						Log.d(this.getClass().toString(), "Failed to load from server.");
+						Log.e(this.getClass().toString(), "Failed to load from server.");
 						e.printStackTrace();
 						return null;
 					} catch (Exception e) {
@@ -133,7 +131,7 @@ public class DownloadActivity extends Activity {
 
 				protected void onPostExecute(RemoteVoiceData[] vdlist) {
 					if (vdlist == null || vdlist.length == 0) {
-						Log.i(this.getClass().toString(),"EOL detected.");
+						Log.d(this.getClass().toString(),"EOL detected.");
 						this.adapter.eol = true;
 						this.view.removeFooterView(((DownloadActivity) this.view.getContext()).list_footer_marker);
 						this.adapter.loading = false;
@@ -370,6 +368,8 @@ public class DownloadActivity extends Activity {
 				protected void onPostExecute(Boolean flag) {
 					if (this.rvd.isDownloaded())
 						context.rvd_list_adapter.notifyDataSetChanged();
+					if (!flag)
+						Toast.makeText(context, R.string.download_failed, Toast.LENGTH_LONG).show();
 					context.setDownloadOverlay(false);
 				}
 			}.execute(this, rvd);
@@ -384,8 +384,8 @@ public class DownloadActivity extends Activity {
 			Toast.makeText(this, R.string.voice_deleted, Toast.LENGTH_SHORT).show();
 			break;
 		case C_MENU_RATE:
-			// TODO: implement!
-			Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show();
+			if (!rvd.isDownloaded()) return true;
+			rvd.getVoiceData().promptToRate(this);
 			break;
 		}
 		return true;

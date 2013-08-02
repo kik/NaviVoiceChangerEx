@@ -17,17 +17,25 @@ import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipException;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.message.BasicNameValuePair;
+
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.net.http.AndroidHttpClient;
+import android.os.AsyncTask;
 import android.util.Log;
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningAppProcessInfo;
+import android.view.Gravity;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
+import android.widget.Toast;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.AssetManager;
-import android.graphics.Paint.Join;
 
 class VoiceDataInstallError extends Exception {};
 class DataDirNotFound extends VoiceDataInstallError {};
@@ -504,5 +512,93 @@ public class VoiceData {
 		if (player != null)
 			player.start();
 	}
+	
+	public void rate(int value) throws IOException {
+		String url = Config.get(this.getContext(), "server_url_base")
+						+ "/navi_voices/" + Integer.toString(this.getId()) + "/ratings.json"; 
+		Log.i(this.getClass().toString(), "Send rating: "+url);
+		AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
 
+		HttpResponse res;
+		HttpPost httppost = new HttpPost(url);
+
+		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+		nameValuePairs.add(new BasicNameValuePair("rating[value]", Integer.toString(value)));
+		nameValuePairs.add(new BasicNameValuePair("rating[ident]", Config.get(this.getContext(), "ident")));
+		httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+		try {
+			res = client.execute(httppost);
+		} finally {
+			client.close();
+		}
+		if (res == null) {
+			String msg = "Cant get reponse on rating";
+			Log.e(this.getClass().getName(), msg);
+			throw new IOException(msg);
+		} else if (res.getStatusLine().getStatusCode() != 201) {
+			String msg = "Server returns bad status code on rating: "+ Integer.toString(res.getStatusLine().getStatusCode());
+			Log.e(this.getClass().getName(), msg);
+			throw new IOException(msg);
+		}
+	}
+	
+	public void promptToRate(Context context) {
+		LinearLayout ratelayout = new LinearLayout(context);
+		RatingBar rating = new RatingBar(context);
+		rating.setMax(5);
+		rating.setStepSize(1.0f);
+		rating.setNumStars(5);
+		ratelayout.addView(rating);
+		ratelayout.setGravity(Gravity.CENTER_HORIZONTAL);
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setTitle(context.getResources().getString(R.string.rate_for) + " " + this.getTitle());
+		builder.setView(ratelayout);
+
+		class RateAction implements DialogInterface.OnClickListener {
+			public VoiceData vd;
+			public Context context;
+			public RatingBar ratebar;
+				
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				new AsyncTask<Object, Void, Boolean>() {
+					protected Context context;
+					
+					@Override
+					protected Boolean doInBackground(Object... params) {
+						this.context = (Context) params[0];
+						VoiceData vd = (VoiceData)  params[1];
+						RatingBar rating = (RatingBar) params[2];
+						try {
+							vd.rate(Math.round(rating.getRating()));
+						} catch (Exception e) {
+							e.printStackTrace();
+							return false;
+						}
+						return true;
+					}
+					protected void onPostExecute(Boolean flag) {
+						if (flag) {
+							Toast.makeText(context, R.string.rate_sent, Toast.LENGTH_SHORT).show();
+						} else {
+							Toast.makeText(context, R.string.sent_failed, Toast.LENGTH_SHORT).show();
+						}
+					}
+				}.execute(context, vd, ratebar);
+				
+			}
+		};
+		RateAction rate_action = new RateAction();
+		rate_action.vd = this;
+		rate_action.context = context;
+		rate_action.ratebar = rating;
+		builder.setPositiveButton(R.string.send, rate_action);
+		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) { }
+		});
+		builder.show();
+	}
 }

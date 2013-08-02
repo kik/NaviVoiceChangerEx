@@ -41,5 +41,10 @@
     <string name="decline">Decline</string>
     <string name="tos_title">Notice</string>
     <string name="tos">Thank you for downloading! Please keep mind following terms;\n\nThis app is depends on CURRENT behavior of Maps and Android OS statically. These are closed and un-documented, then this app WILL STOP WORKING on future changes. In that case, I can NOT promise to continue to support.</string>
+    <string name="send">Send</string>
+    <string name="rate_sent">Your rating has been sent.</string>
+    <string name="rate_for">Rate for</string>
+    <string name="sent_failed">Send failed.</string>
+    <string name="download_failed">Download Failed.</string>
 
 </resources>

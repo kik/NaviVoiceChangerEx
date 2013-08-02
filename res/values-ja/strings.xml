@@ -39,6 +39,9 @@
     <string name="decline">断る!</string>
     <string name="tos_title">おことわり</string>
     <string name="tos">ダウンロードありがとうございます。すみませんが使うにあたり、以下に注意してください。\n\nこのアプリはマップと Android OS の現状の挙動に固定的に依存しています。それらは非公開のものであるため、将来の変更時にこのアプリは動作しなくなります。その場合の対応は全く保証できません。</string>
-    
-    
+    <string name="send">送信</string>
+    <string name="rate_sent">評価を送信しました。</string>
+    <string name="rate_for">評価: </string>
+    <string name="sent_failed">送信に失敗しました</string>
+    <string name="download_failed">ダウンロードに失敗しました</string>
 </resources>

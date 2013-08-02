@@ -4,9 +4,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.content.Context;
 import android.media.MediaPlayer;
@@ -99,6 +105,11 @@ public class RemoteVoiceData {
 		this.downloadFile(this.archive_url, new File(datadir, VoiceData.ARCHIVE_FILENAME));
 		this.downloadFile(this.preview_url, new File(datadir, VoiceData.PREVIEW_FILESNAME));
 		this.downloadFile(this.ini_url,     new File(datadir, VoiceData.DATA_INI));
+		try {
+			this.addDownloadCount(context);
+		} catch (Exception e) {
+			// Ignore ALL errors on count up.... 
+		}
 		this.setVoiceData(new VoiceData(datadir, context));
 	}
 	
@@ -108,7 +119,7 @@ public class RemoteVoiceData {
 		FileOutputStream os = null;
 		AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
 		try {
-			Log.i(this.getClass().toString(), "Loading URL: "+this.ini_url);
+			Log.i(this.getClass().toString(), "Loading URL: "+ url);
 			HttpResponse res;
 			res = client.execute(new HttpGet(url));
 			if (res.getStatusLine().getStatusCode() != 200) {
@@ -125,6 +136,31 @@ public class RemoteVoiceData {
 				os.close();
 			if (is != null)
 				is.close();
+		}
+	}
+	
+	protected void addDownloadCount(Context context) throws IOException {
+		AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
+		String url = Config.get(context, "server_url_base")
+				+ "/navi_voices/" + Integer.toString(this.getId()) + "/dl_log_entries.json"; 
+
+		Log.i(this.getClass().toString(), "Loading URL: "+ url);
+		HttpResponse res;
+
+		HttpPost httppost = new HttpPost(url);
+		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+		nameValuePairs.add(new BasicNameValuePair("dl_log_entry[ident]", Config.get(context, "ident")));
+		httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+		try {
+			res = client.execute(httppost);
+		} finally {
+			client.close();
+		}
+		if (res.getStatusLine().getStatusCode() != 201) {
+			String msg = "Server returns bad status code: "+ Integer.toString(res.getStatusLine().getStatusCode());
+			Log.e(this.getClass().toString(), msg);
+			throw new IOException(msg);
 		}
 	}
 	

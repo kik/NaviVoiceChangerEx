@@ -366,10 +366,12 @@ public class DownloadActivity extends Activity {
 				}
 				
 				protected void onPostExecute(Boolean flag) {
-					if (this.rvd.isDownloaded())
+					if (flag && this.rvd.isDownloaded()) {
 						context.rvd_list_adapter.notifyDataSetChanged();
-					if (!flag)
+						Toast.makeText(context, R.string.download_success, Toast.LENGTH_LONG).show();
+					} else {
 						Toast.makeText(context, R.string.download_failed, Toast.LENGTH_LONG).show();
+					}
 					context.setDownloadOverlay(false);
 				}
 			}.execute(this, rvd);

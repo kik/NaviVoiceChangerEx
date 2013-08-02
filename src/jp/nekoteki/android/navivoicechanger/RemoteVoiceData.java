@@ -96,9 +96,9 @@ public class RemoteVoiceData {
 			throw new IOException("Cannot find external strage.");
 		File datadir = new File(basedir, Integer.toString(this.id));
 		if (!datadir.exists()) datadir.mkdirs();
-		this.downloadFile(this.ini_url,     new File(datadir, VoiceData.DATA_INI));
 		this.downloadFile(this.archive_url, new File(datadir, VoiceData.ARCHIVE_FILENAME));
 		this.downloadFile(this.preview_url, new File(datadir, VoiceData.PREVIEW_FILESNAME));
+		this.downloadFile(this.ini_url,     new File(datadir, VoiceData.DATA_INI));
 		this.setVoiceData(new VoiceData(datadir, context));
 	}
 	

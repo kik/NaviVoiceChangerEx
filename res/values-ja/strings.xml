@@ -44,4 +44,5 @@
     <string name="rate_for">評価: </string>
     <string name="sent_failed">送信に失敗しました</string>
     <string name="download_failed">ダウンロードに失敗しました</string>
+    <string name="download_success">ダウンロード完了しました</string>
 </resources>

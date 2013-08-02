@@ -46,5 +46,6 @@
     <string name="rate_for">Rate for</string>
     <string name="sent_failed">Send failed.</string>
     <string name="download_failed">Download Failed.</string>
+    <string name="download_success">Download completed</string>
 
 </resources>

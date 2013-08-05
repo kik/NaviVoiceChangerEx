@@ -55,5 +55,8 @@
     <string name="dlopt_order_dlcount">By download count</string>
     <string name="apply">Apply</string>
     <string name="dllist_opts_title">List options</string>
+    <string name="author_">Author:</string>
+    <string name="downloads_">Downloads:</string>
+    <string name="anonymous">(Anonymous)</string>
 
 </resources>

@@ -31,6 +31,7 @@ public class RemoteVoiceData {
 	private String author;
 	private String description;
 	private VoiceData voice_data;
+	private int dlcount;
 	
 	public VoiceData getVoiceData() {
 		return voice_data;
@@ -178,5 +179,11 @@ public class RemoteVoiceData {
 			if (player != null)
 				player.start();
 		}
+	}
+	public int getDlcount() {
+		return dlcount;
+	}
+	public void setDlcount(int dlcount) {
+		this.dlcount = dlcount;
 	}
 }

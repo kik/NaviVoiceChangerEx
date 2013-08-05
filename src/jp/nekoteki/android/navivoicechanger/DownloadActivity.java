@@ -34,6 +34,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -198,36 +199,54 @@ public class DownloadActivity extends Activity {
 			title.setTextSize(16);
 			textlayout.addView(title);
 
-			TextView description = new TextView(context);
-			description.setTextSize(12);
-			description.setText(rvd.getDescription());
-			textlayout.addView(description);
+			if (rvd.getAuthor() != null && !rvd.getAuthor().equals("")) {
+				TextView author = new TextView(context);
+				author.setTextSize(14);
+				author.setText(getResources().getString(R.string.author_)+" "+rvd.getAuthor());
+				textlayout.addView(author);
+			}
+			
+			LinearLayout infoline = new LinearLayout(context);
+			infoline.setOrientation(LinearLayout.HORIZONTAL);
+			if (rvd.getRating() > 0) {
+				RatingBar rating = new RatingBar(context, null, android.R.attr.ratingBarStyleSmall);
+				rating.setMax(5);
+				rating.setNumStars(5);
+				rating.setRating(rvd.getRating());
+				infoline.addView(rating);
+			}
+
+			if (rvd.getDlcount() > 0) {
+				TextView downloads = new TextView(context);
+				downloads.setTextSize(12);
+				downloads.setText(getResources().getString(R.string.downloads_) + " " + Integer.toString(rvd.getDlcount()));
+				downloads.setPadding(10, 0, 0, 0);
+				infoline.addView(downloads);
+			}
+			
+			textlayout.addView(infoline);
+			
+			if (rvd.getDescription() != null && !rvd.getDescription().equals("")) {
+				TextView description = new TextView(context);
+				description.setTextSize(12);
+				description.setText(rvd.getDescription());
+				textlayout.addView(description);
+			}
+			
 			container.addView(textlayout);
 
 			TextView downloaded = new TextView(context);
 			if (rvd.isDownloaded()) {
-				Drawable dmark = getResources().getDrawable(android.R.drawable.checkbox_on_background);
+				Drawable dmark = getResources().getDrawable(android.R.drawable.stat_sys_download_done);
 				dmark.setBounds(0, 0, 20, 20);
 				downloaded.setCompoundDrawables(dmark, null, null, null);
 				RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 				lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 				lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 				downloaded.setLayoutParams(lp);
+				downloaded.setBackgroundColor(Color.GRAY);
+				downloaded.setTextSize(1);
 				container.addView(downloaded);
-			}
-
-			TextView author = new TextView(context);
-			if (rvd.getAuthor() != null && !rvd.getAuthor().equals("")) {
-				author.setTextSize(14);
-				author.setText("By "+rvd.getAuthor());
-				RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-				lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-				lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-				if (rvd.isDownloaded()) {
-					lp.setMargins(0, 0, 22, 0);
-				}
-				author.setLayoutParams(lp);
-				container.addView(author);
 			}
 
 			container.setPadding(0, 5, 0, 5);

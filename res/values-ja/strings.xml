@@ -53,4 +53,7 @@
     <string name="dlopt_order_dlcount">ダウンロード回数</string>
     <string name="apply">適用</string>
     <string name="dllist_opts_title">リストオプション</string>
+    <string name="author_">作者:</string>
+    <string name="downloads_">ダウンロード数:</string>
+    <string name="anonymous">(匿名)</string>
 </resources>

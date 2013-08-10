@@ -165,6 +165,8 @@ public class InstallListActivity extends Activity {
 			//
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
+		case R.id.menu_go_download:
+			startActivity(new Intent(InstallListActivity.this, DownloadActivity.class));
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -207,9 +209,5 @@ public class InstallListActivity extends Activity {
 			break;
 		}
 		return true;
-	}
-
-	public void goDownloadActivityFromMenu(MenuItem item) {
-		startActivity(new Intent(InstallListActivity.this, DownloadActivity.class));
 	}
 }

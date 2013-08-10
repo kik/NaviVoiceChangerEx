@@ -380,6 +380,9 @@ public class DownloadActivity extends Activity {
 			//
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
+		case R.id.menu_go_install:
+			startActivity(new Intent(DownloadActivity.this, InstallListActivity.class));
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -393,10 +396,6 @@ public class DownloadActivity extends Activity {
 		}
 	}
 	
-	public void goInstallListFromMenu(MenuItem item) {
-		startActivity(new Intent(DownloadActivity.this, InstallListActivity.class));
-	}
-
 	public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo info) {
 		super.onCreateContextMenu(menu, view, info);
 		AdapterContextMenuInfo ainfo = (AdapterContextMenuInfo) info;

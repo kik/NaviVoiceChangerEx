@@ -1,4 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/menu_go_install" android:showAsAction="always" android:icon="@android:drawable/ic_menu_add" android:onClick="goInstallListFromMenu" android:title="@string/title_activity_install_list"></item>
+    <item android:id="@+id/menu_go_install" android:showAsAction="always" android:icon="@android:drawable/ic_menu_add" android:title="@string/title_activity_install_list"></item>
 
 </menu>

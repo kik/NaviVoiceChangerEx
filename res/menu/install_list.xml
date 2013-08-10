@@ -1,4 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/menu_go_download" android:showAsAction="always" android:icon="@android:drawable/ic_menu_search" android:title="@string/title_activity_download" android:onClick="goDownloadActivityFromMenu"></item>
+    <item android:id="@+id/menu_go_download" android:showAsAction="always" android:icon="@android:drawable/ic_menu_search" android:title="@string/title_activity_download"></item>
 
 </menu>

@@ -212,6 +212,7 @@ public class DownloadActivity extends Activity {
 				RatingBar rating = new RatingBar(context, null, android.R.attr.ratingBarStyleSmall);
 				rating.setMax(5);
 				rating.setNumStars(5);
+				rating.setStepSize(0.5f);
 				rating.setRating(rvd.getRating());
 				infoline.addView(rating);
 			}

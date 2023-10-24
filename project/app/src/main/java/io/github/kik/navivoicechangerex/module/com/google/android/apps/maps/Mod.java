@@ -14,6 +14,12 @@ import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class Mod implements IXposedHookLoadPackage {
     @Override
@@ -51,8 +57,35 @@ public class Mod implements IXposedHookLoadPackage {
 
     private static boolean synthesize(String text, String path) {
         XposedBridge.log("synthesize() called: " + text);
-        try (FileOutputStream os = new FileOutputStream(path)) {
-            os.write(Base64.decode(dummyWav, Base64.DEFAULT));
+
+        HttpUrl baseUrl = HttpUrl.parse("http://192.168.39.5:50021");
+        OkHttpClient client = new OkHttpClient();
+        String speakerId = "26";
+
+        Request r = new Request.Builder()
+                .url(baseUrl.newBuilder()
+                        .addPathSegment("audio_query")
+                        .addQueryParameter("speaker", speakerId)
+                        .addQueryParameter("text", text)
+                        .build())
+                .post(RequestBody.create("", null))
+                .build();
+        try (Response response = client.newCall(r).execute()) {
+            String audio = response.body().string();
+
+            Request r2 = new Request.Builder()
+                    .url(baseUrl.newBuilder()
+                            .addPathSegment("synthesis")
+                            .addQueryParameter("speaker", speakerId)
+                            .build())
+                    .post(RequestBody.create(audio, MediaType.parse("application/json")))
+                    .build();
+            try (Response response2 = client.newCall(r2).execute()) {
+                byte[] bs = response2.body().bytes();
+                try (FileOutputStream os = new FileOutputStream(path)) {
+                    os.write(bs);
+                }
+            }
         } catch (IOException ioe) {
             XposedBridge.log(ioe);
             return false;

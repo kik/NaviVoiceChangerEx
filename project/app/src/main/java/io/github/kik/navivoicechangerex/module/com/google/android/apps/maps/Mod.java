@@ -5,6 +5,8 @@ import android.util.Pair;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Field;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -47,22 +49,35 @@ public class Mod implements IXposedHookLoadPackage {
         }
     }
 
+    private static boolean synthesize(String text, String path) {
+        XposedBridge.log("synthesize() called: " + text);
+        try (FileOutputStream os = new FileOutputStream(path)) {
+            os.write(Base64.decode(dummyWav, Base64.DEFAULT));
+        } catch (IOException ioe) {
+            XposedBridge.log(ioe);
+            return false;
+        }
+        return true;
+    }
+
     private static class SynthesizeMethod extends XC_MethodReplacement {
         private final String className;
+        private Field field;
 
         public SynthesizeMethod(String className) {
             this.className = className;
+            this.field = null;
         }
 
         @Override
-        protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-            Object text = methodHookParam.args[0];
-            String path = (String) methodHookParam.args[1];
-            XposedBridge.log("synthesize() called: " + this.className + ", " + text);
-            try (FileOutputStream os = new FileOutputStream(path)) {
-                os.write(Base64.decode(dummyWav, Base64.DEFAULT));
+        protected synchronized Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
+            Object param = methodHookParam.args[0];
+            if (field == null) {
+                field = XposedHelpers.findField(param.getClass(), "a");
             }
-            return true;
+            String text = (String)field.get(param);
+            String path = (String)methodHookParam.args[1];
+            return synthesize(text, path);
         }
     }
 
@@ -70,7 +85,6 @@ public class Mod implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod(httpSynthesizeClassName, lpparam.classLoader, methodName, paramClassName, String.class, new SynthesizeMethod(httpSynthesizeClassName));
         XposedHelpers.findAndHookMethod(rpcSynthesizeClassName, lpparam.classLoader, methodName, paramClassName, String.class, new SynthesizeMethod(rpcSynthesizeClassName));
     }
-
 
     public static final String dummyWav =
             "UklGRiS2AABXQVZFZm10IBAAAAABAAEAwF0AAIC7AAACABAAZGF0YQC2AAD+//3//f////////8B"+

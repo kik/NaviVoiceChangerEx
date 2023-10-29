@@ -22,9 +22,23 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packaging {
+        resources {
+            merges += "META-INF/xposed/*"
+            excludes += "**"
+        }
     }
 }
 
@@ -37,6 +51,9 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
-    compileOnly  files('libs/api.jar')
-    compileOnly  'de.robv.android.xposed:api:82:sources'
+    //compileOnly  files('libs/api.jar')
+    //compileOnly  'de.robv.android.xposed:api:82:sources'
+    compileOnly 'io.github.libxposed:api:100'
+    implementation 'io.github.libxposed:service:100-1.0.0'
+    implementation 'io.github.libxposed:helper:100.0.1'
 }

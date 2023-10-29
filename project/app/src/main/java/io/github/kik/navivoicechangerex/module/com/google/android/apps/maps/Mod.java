@@ -1,26 +1,9 @@
 package io.github.kik.navivoicechangerex.module.com.google.android.apps.maps;
 
-import android.util.Base64;
-import android.util.Pair;
+public class Mod {
+}
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Field;
-
-import de.robv.android.xposed.IXposedHookLoadPackage;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XC_MethodReplacement;
-import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
+/*
 public class Mod implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
@@ -940,3 +923,4 @@ public class Mod implements IXposedHookLoadPackage {
             "//////////7//v///wEAAAD//////v/+///////9//7////+/////f/9//7////////////+//7/"+
             "/v///////v///w==";
 }
+*/

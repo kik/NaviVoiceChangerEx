@@ -2,17 +2,22 @@ package io.github.kik.navivoicechangerex;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
+import dalvik.system.BaseDexClassLoader;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
 import io.github.libxposed.api.annotations.AfterInvocation;
 import io.github.libxposed.api.annotations.BeforeInvocation;
 import io.github.libxposed.api.annotations.XposedHooker;
+import io.github.libxposed.helper.HookBuilder;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -126,8 +131,52 @@ public class ModuleMain extends XposedModule
 
             hook(httpSynthesize, MyHooker.class);
             hook(rpcSynthesize, MyHooker.class);
+
+            analyze(param);
         } catch (Exception ex) {
             log("hook failed", ex);
+        }
+    }
+
+    @OptIn(markerClass = HookBuilder.DexAnalysis.class)
+    private void analyze(@NonNull PackageLoadedParam param)
+    {
+        try {
+            HookBuilder.buildHooks(this, (BaseDexClassLoader) param.getClassLoader(), param.getApplicationInfo().sourceDir, builder -> {
+                builder.setExceptionHandler(ex -> {
+                    log("builder ex", ex);
+                    return true;
+                });
+                log("building hooks");
+                builder.setForceDexAnalysis(false);
+                /*
+                log("search method");
+                HookBuilder.MethodMatch method = builder.firstMethod(methodMatcher -> {
+                    //methodMatcher.setReferredStrings(builder.exact("Couldn't build synthesis URL.").observe());
+                    //methodMatcher.setIsFinal(true);
+                    methodMatcher.setName(builder.exact("bafb"));
+                });
+                method.onMatch(m -> {
+                    log("method = " + m);
+                }).onMiss(() -> {
+                    log("not found");
+                });
+                log("method match = " + method);
+
+
+                builder.classes(classMatcher -> {
+                    //classMatcher.setName(builder.exact("bafb"));
+                }).onMatch(classes -> {
+                    for (Class<?> c : classes) {
+                        log("class found: " + c);
+                    }
+                }).onMiss(() -> {
+                    log("class not found");
+                });
+*/
+            }).get();
+        } catch (Exception ex) {
+            log("analyze", ex);
         }
     }
 }

@@ -37,4 +37,6 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("net.arnx:jsonic:1.3.0")
 
+    compileOnly("io.github.libxposed:api:100")
+    implementation("io.github.libxposed:service:100-1.0.0")
 }

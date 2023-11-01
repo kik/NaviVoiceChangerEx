@@ -6,10 +6,15 @@ import androidx.annotation.OptIn;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 import dalvik.system.BaseDexClassLoader;
 import io.github.libxposed.api.XposedInterface;
@@ -138,43 +143,83 @@ public class ModuleMain extends XposedModule
         }
     }
 
+    private static String className(int index)
+    {
+        int n = 'z' - 'a' + 1;
+        String s = "";
+        while (index > 0) {
+            int c = index % n;
+            index /= n;
+            s = (char)('a' + c) + s;
+        }
+        return s;
+    }
+
     @OptIn(markerClass = HookBuilder.DexAnalysis.class)
     private void analyze(@NonNull PackageLoadedParam param)
     {
         try {
-            HookBuilder.buildHooks(this, (BaseDexClassLoader) param.getClassLoader(), param.getApplicationInfo().sourceDir, builder -> {
-                builder.setExceptionHandler(ex -> {
-                    log("builder ex", ex);
+            ArrayList<Class<?>> classList = new ArrayList<>();
+            for (int i = 1; i < 100000; i++) {
+                try {
+                    classList.add(param.getClassLoader().loadClass(className(i)));
+                } catch (ClassNotFoundException ex) {
+                }
+            }
+            log("class count = " + classList.size());
+
+            final Class<?> ttsSynthesizeInterface = classList.stream().filter(clz -> {
+                Class<?>[] intfs = clz.getInterfaces();
+                if (intfs.length != 1) return false;
+                if (!intfs[0].getName().equals("java.lang.Runnable")) return false;
+                return true;
+            }).map(clz -> {
+                Constructor<?>[] ctors = clz.getDeclaredConstructors();
+                if (ctors.length != 1) return null;
+                Constructor<?> ctor = ctors[0];
+                java.lang.reflect.Parameter[] params = ctor.getParameters();
+                if (params.length < 1) return null;
+                if (!params[0].getType().getName().equals("java.util.concurrent.PriorityBlockingQueue"))
+                    return null;
+                Class<?> tts = null;
+                boolean executor = false;
+                for (int i = 0; i < params.length - 1; i++) {
+                    if (params[i].getType().equals(params[i + 1].getType())) {
+                        if (params[i].getType().getName().equals("java.util.concurrent.Executor")) {
+                            executor = true;
+                        } else {
+                            tts = params[i].getType();
+                        }
+                    }
+                }
+                if (!executor) return null;
+                return tts;
+            }).filter(Objects::nonNull).findFirst().get();
+            log("ttsSynthesizeInterface = " + ttsSynthesizeInterface);
+
+            final Stream<Class<?>> ttsSynthesizers = classList.stream().filter(clz -> {
+                Class<?>[] intfs = clz.getInterfaces();
+                if (intfs.length != 1) return false;
+                if (!intfs[0].equals(ttsSynthesizeInterface)) return false;
+                return true;
+            });
+
+            ttsSynthesizers.flatMap(clz -> {
+                log("ttsSynthesizer = " + clz);
+                return Arrays.stream(clz.getDeclaredMethods()).filter(m -> {
+                    if (m.getParameters().length != 2) return false;
+                    if (!m.getParameters()[1].getType().equals(String.class)) return false;
+
+                    try {
+                        ttsSynthesizeInterface.getMethod(m.getName(), m.getParameterTypes()[0], m.getParameterTypes()[1]);
+                    } catch (NoSuchMethodException ex) {
+                        return false;
+                    }
                     return true;
                 });
-                log("building hooks");
-                builder.setForceDexAnalysis(false);
-                /*
-                log("search method");
-                HookBuilder.MethodMatch method = builder.firstMethod(methodMatcher -> {
-                    //methodMatcher.setReferredStrings(builder.exact("Couldn't build synthesis URL.").observe());
-                    //methodMatcher.setIsFinal(true);
-                    methodMatcher.setName(builder.exact("bafb"));
-                });
-                method.onMatch(m -> {
-                    log("method = " + m);
-                }).onMiss(() -> {
-                    log("not found");
-                });
-                log("method match = " + method);
-
-
-                builder.classes(classMatcher -> {
-                    //classMatcher.setName(builder.exact("bafb"));
-                }).onMatch(classes -> {
-                    for (Class<?> c : classes) {
-                        log("class found: " + c);
-                    }
-                }).onMiss(() -> {
-                    log("class not found");
-                });
-*/
-            }).get();
+            }).forEach(m ->{
+                log("hook method: " + m);
+            });
         } catch (Exception ex) {
             log("analyze", ex);
         }

@@ -48,6 +48,8 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 
+import androidx.core.content.res.ResourcesCompat;
+
 import net.arnx.jsonic.JSON;
 
 import io.github.kik.navivoicechangerex.R;
@@ -56,12 +58,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class DownloadActivity extends Activity {
-	
+
 	public class RemoteVoiceDataAdapter extends BaseAdapter {
 		protected boolean eol = false;
 		protected Context context;
 		protected List<RemoteVoiceData> list;
-		protected int cur_page = 1; 
+		protected int cur_page = 1;
 		protected boolean loading = false;
 		protected String q;
 		protected String order = "time";
@@ -71,11 +73,11 @@ public class DownloadActivity extends Activity {
 			this.context = context;
 			this.reset();
  		}
-		
+
 		public String getOrder() {
 			return this.order;
 		}
-		
+
 		@Override
 		public int getCount() {
 			return this.list.size();
@@ -90,27 +92,26 @@ public class DownloadActivity extends Activity {
 		public long getItemId(int position) {
 			return ((RemoteVoiceData) this.getItem(position)).getId();
 		}
-		
+
 		public RemoteVoiceData getItemById(int id) {
 			for (RemoteVoiceData rvd: this.list) {
 				if (rvd.getId() == id) return rvd;
 			}
 			return null;
 		}
-		
+
 		public void reset() {
 			this.cur_page = 1;
 			this.list = new ArrayList<RemoteVoiceData>();
 			this.notifyDataSetChanged();
 		}
-		
+
 		public void add(RemoteVoiceData vd) {
 			this.list.add(vd);
 		}
-		
+
 		@SuppressLint("StaticFieldLeak")
 		public void loadList(AbsListView view) {
-			if (this.loading || this.eol) return;
 			if (this.loading || this.eol) return;
 			this.loading = true;
 			String url = Config.get(context, "server_url_base") +"/navi_voices.json?page="+Integer.toString(this.cur_page)+"&order="+this.order;
@@ -122,7 +123,7 @@ public class DownloadActivity extends Activity {
 					e.printStackTrace();
 				}
 			}
-				
+
 			new AsyncTask<Object, Void, RemoteVoiceData[]>() {
 				protected RemoteVoiceDataAdapter adapter;
 				protected ListView view;
@@ -184,13 +185,13 @@ public class DownloadActivity extends Activity {
 				}
 			}.execute(url, view, this);
 		}
-		
+
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			RemoteVoiceData rvd = (RemoteVoiceData) getItem(position);
-			
+
 			RelativeLayout container = new RelativeLayout(context);
-			
+
 			LinearLayout textlayout = new LinearLayout(context);
 			textlayout.setOrientation(LinearLayout.VERTICAL);
 			textlayout.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -206,10 +207,10 @@ public class DownloadActivity extends Activity {
 			if (rvd.getAuthor() != null && !rvd.getAuthor().equals("")) {
 				TextView author = new TextView(context);
 				author.setTextSize(14);
-				author.setText(getResources().getString(R.string.author_)+" "+rvd.getAuthor());
+				author.setText(getResources().getString(R.string.author, rvd.getAuthor()));
 				textlayout.addView(author);
 			}
-			
+
 			LinearLayout infoline = new LinearLayout(context);
 			infoline.setOrientation(LinearLayout.HORIZONTAL);
 			if (rvd.getRating() > 0) {
@@ -224,25 +225,25 @@ public class DownloadActivity extends Activity {
 			if (rvd.getDlcount() > 0) {
 				TextView downloads = new TextView(context);
 				downloads.setTextSize(12);
-				downloads.setText(getResources().getString(R.string.downloads_) + " " + Integer.toString(rvd.getDlcount()));
+				downloads.setText(getResources().getString(R.string.downloads, rvd.getDlcount()));
 				downloads.setPadding(10, 0, 0, 0);
 				infoline.addView(downloads);
 			}
-			
+
 			textlayout.addView(infoline);
-			
+
 			if (rvd.getDescription() != null && !rvd.getDescription().equals("")) {
 				TextView description = new TextView(context);
 				description.setTextSize(12);
 				description.setText(rvd.getDescription());
 				textlayout.addView(description);
 			}
-			
+
 			container.addView(textlayout);
 
 			TextView downloaded = new TextView(context);
 			if (rvd.isDownloaded()) {
-				Drawable dmark = getResources().getDrawable(android.R.drawable.stat_sys_download_done);
+				Drawable dmark = ResourcesCompat.getDrawable(getResources(), android.R.drawable.stat_sys_download_done, null);
 				dmark.setBounds(0, 0, 20, 20);
 				downloaded.setCompoundDrawables(dmark, null, null, null);
 				RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -257,7 +258,7 @@ public class DownloadActivity extends Activity {
 			container.setPadding(0, 5, 0, 5);
 			return container;
 		}
-		
+
 	}
 
 	private static final int C_MENU_PREVIEW = 0;
@@ -269,15 +270,13 @@ public class DownloadActivity extends Activity {
 	public View list_footer_marker = null;
 	public RemoteVoiceDataAdapter rvd_list_adapter;
 	public List<VoiceData> voice_data_list;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_download);
-		// Show the Up button in the action bar.
-		setupActionBar();
-		
-		this.rvd_list_adapter = new RemoteVoiceDataAdapter(this); 
+
+		this.rvd_list_adapter = new RemoteVoiceDataAdapter(this);
 		this.list_footer_marker = getLayoutInflater().inflate(R.layout.list_progress_footer, null);
 		this.scanVoiceData();
 
@@ -289,7 +288,7 @@ public class DownloadActivity extends Activity {
 			public void onScrollStateChanged(AbsListView view, int scrollState) {
 				// nothing to do...
 			}
-			
+
 			@Override
 			public void onScroll(AbsListView view, int firstVisibleItem,
 					int visibleItemCount, int totalItemCount) {
@@ -300,98 +299,50 @@ public class DownloadActivity extends Activity {
 
 		registerForContextMenu(lv);
 
-		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> list, View item, int pos, long id) {
-				item.performLongClick();
-			}
-		});
-		
-		findViewById(R.id.btn_dl_opts).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				AlertDialog.Builder dialog = new AlertDialog.Builder(DownloadActivity.this);
-				class DlOptsApplyClkListener implements DialogInterface.OnClickListener {
-					public View opt_view;
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						RemoteVoiceDataAdapter rvd_adpt = DownloadActivity.this.rvd_list_adapter;
-						if (((RadioButton) opt_view.findViewById(R.id.dlopt_order_dlcount)).isChecked()) {
-							rvd_adpt.order = "dlcount";
-						} else if (((RadioButton) opt_view.findViewById(R.id.dlopt_order_rating)).isChecked()) {
-							rvd_adpt.order = "rating";
-						} else {
-							rvd_adpt.order = "time";
-						}
-						rvd_adpt.q = ((EditText) opt_view.findViewById(R.id.dlopt_filter_q)).getText().toString();
-						rvd_adpt.reset();
+		lv.setOnItemClickListener((list, item, pos, id) -> item.performLongClick());
+
+		findViewById(R.id.btn_dl_opts).setOnClickListener(v -> {
+			AlertDialog.Builder dialog = new AlertDialog.Builder(DownloadActivity.this);
+			class DlOptsApplyClkListener implements DialogInterface.OnClickListener {
+				public View opt_view;
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					RemoteVoiceDataAdapter rvd_adpt = DownloadActivity.this.rvd_list_adapter;
+					if (((RadioButton) opt_view.findViewById(R.id.dlopt_order_dlcount)).isChecked()) {
+						rvd_adpt.order = "dlcount";
+					} else if (((RadioButton) opt_view.findViewById(R.id.dlopt_order_rating)).isChecked()) {
+						rvd_adpt.order = "rating";
+					} else {
+						rvd_adpt.order = "time";
 					}
+					rvd_adpt.q = ((EditText) opt_view.findViewById(R.id.dlopt_filter_q)).getText().toString();
+					rvd_adpt.reset();
 				}
-				DlOptsApplyClkListener apply_hdl = new DlOptsApplyClkListener();
-				apply_hdl.opt_view = View.inflate(DownloadActivity.this, R.layout.dl_filter, null);
-				RemoteVoiceDataAdapter rvd_adpt = DownloadActivity.this.rvd_list_adapter;
-				if (rvd_adpt.order == "dlcount") {
-					((RadioButton) apply_hdl.opt_view.findViewById(R.id.dlopt_order_dlcount)).setChecked(true);
-				} else if (rvd_adpt.order == "rating") {
-					((RadioButton) apply_hdl.opt_view.findViewById(R.id.dlopt_order_rating)).setChecked(true);
-				} else {
-					((RadioButton) apply_hdl.opt_view.findViewById(R.id.dlopt_order_time)).setChecked(true);
-				}
-				((EditText) apply_hdl.opt_view.findViewById(R.id.dlopt_filter_q)).setText(rvd_adpt.q);
-				
-				dialog.setPositiveButton(R.string.apply, apply_hdl);
-				dialog.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) { }
-				});
-				dialog.setTitle(R.string.dllist_opts_title);
-				dialog.setView(apply_hdl.opt_view);
-				dialog.show();
 			}
+			DlOptsApplyClkListener apply_hdl = new DlOptsApplyClkListener();
+			apply_hdl.opt_view = View.inflate(DownloadActivity.this, R.layout.dl_filter, null);
+			RemoteVoiceDataAdapter rvd_adpt = DownloadActivity.this.rvd_list_adapter;
+			if (rvd_adpt.order == "dlcount") {
+				((RadioButton) apply_hdl.opt_view.findViewById(R.id.dlopt_order_dlcount)).setChecked(true);
+			} else if (rvd_adpt.order == "rating") {
+				((RadioButton) apply_hdl.opt_view.findViewById(R.id.dlopt_order_rating)).setChecked(true);
+			} else {
+				((RadioButton) apply_hdl.opt_view.findViewById(R.id.dlopt_order_time)).setChecked(true);
+			}
+			((EditText) apply_hdl.opt_view.findViewById(R.id.dlopt_filter_q)).setText(rvd_adpt.q);
+
+			dialog.setPositiveButton(R.string.apply, apply_hdl);
+			dialog.setNegativeButton(android.R.string.cancel, (dialog1, which) -> { });
+			dialog.setTitle(R.string.dllist_opts_title);
+			dialog.setView(apply_hdl.opt_view);
+			dialog.show();
 		});
 	}
-	
+
 	protected void scanVoiceData() {
 		this.voice_data_list = VoiceData.scanVoiceData(getApplicationContext());
 	}
 
-	/**
-	 * Set up the {@link android.app.ActionBar}, if the API is available.
-	 */
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	private void setupActionBar() {
-		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-		//	getActionBar().setDisplayHomeAsUpEnabled(true);
-		//}
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.download, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			// This ID represents the Home or Up button. In the case of this
-			// activity, the Up button is shown. Use NavUtils to allow users
-			// to navigate up one level in the application structure. For
-			// more details, see the Navigation pattern on Android Design:
-			//
-			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
-			//
-			//NavUtils.navigateUpFromSameTask(this);
-			return true;
-		/*case R.id.menu_go_install:
-			startActivity(new Intent(DownloadActivity.this, InstallListActivity.class));
-			return true;*/
-		}
-		return super.onOptionsItemSelected(item);
-	}
-	
 	protected void setDownloadOverlay(boolean flag) {
 		View view = findViewById(R.id.download_pregrees);
 		if (flag) {
@@ -400,12 +351,12 @@ public class DownloadActivity extends Activity {
 			view.setVisibility(View.GONE);
 		}
 	}
-	
+
 	public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo info) {
 		super.onCreateContextMenu(menu, view, info);
 		AdapterContextMenuInfo ainfo = (AdapterContextMenuInfo) info;
 		ListView listView = (ListView)view;
-		
+
 		RemoteVoiceData rvd = (RemoteVoiceData) listView.getItemAtPosition(ainfo.position);
 		menu.setHeaderTitle(rvd.getTitle());
 		menu.add(rvd.getId(), C_MENU_PREVIEW,  0, R.string.c_menu_preview);
@@ -422,7 +373,7 @@ public class DownloadActivity extends Activity {
 			menu.getItem(C_MENU_RATE).setEnabled(false);
 		}
 	}
-	
+
 	@SuppressLint("StaticFieldLeak")
 	public boolean onContextItemSelected(MenuItem item) {
 		RemoteVoiceData rvd = this.rvd_list_adapter.getItemById(item.getGroupId());
@@ -434,11 +385,11 @@ public class DownloadActivity extends Activity {
 		case C_MENU_DOWNLOAD:
 			if (rvd.isDownloaded()) return true;
 			this.setDownloadOverlay(true);
-			
+
 			new AsyncTask<Object, Void, Boolean>() {
 				protected DownloadActivity context;
 				protected RemoteVoiceData rvd;
-				
+
 				@Override
 				protected Boolean doInBackground(Object... params) {
 					this.context = (DownloadActivity) params[0];
@@ -451,7 +402,7 @@ public class DownloadActivity extends Activity {
 					}
 					return true;
 				}
-				
+
 				protected void onPostExecute(Boolean flag) {
 					if (flag && this.rvd.isDownloaded()) {
 						context.rvd_list_adapter.notifyDataSetChanged();

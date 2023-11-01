@@ -13,6 +13,7 @@ import java.util.List;
 //import org.apache.http.client.methods.HttpGet;
 
 //import android.net.http.AndroidHttpClient;
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
@@ -47,7 +48,12 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 
+import net.arnx.jsonic.JSON;
+
 import io.github.kik.navivoicechangerex.R;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class DownloadActivity extends Activity {
 	
@@ -102,6 +108,7 @@ public class DownloadActivity extends Activity {
 			this.list.add(vd);
 		}
 		
+		@SuppressLint("StaticFieldLeak")
 		public void loadList(AbsListView view) {
 			if (this.loading || this.eol) return;
 			if (this.loading || this.eol) return;
@@ -122,38 +129,29 @@ public class DownloadActivity extends Activity {
 
 				@Override
 				protected RemoteVoiceData[] doInBackground(Object... params) {
-					/*
-					AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
-					try {
-						String url = (String) params[0];
-						this.view = (ListView) params[1];
-						this.adapter = (RemoteVoiceDataAdapter) params[2];
-						Log.i(this.getClass().toString(), "Loading URL: "+url);
-						HttpResponse res;
-						res = client.execute(new HttpGet(url));
+					String url = (String) params[0];
+					this.view = (ListView) params[1];
+					this.adapter = (RemoteVoiceDataAdapter) params[2];
+					Log.i(this.getClass().toString(), "Loading URL: "+url);
+
+					Request req = new Request.Builder()
+							.url(url)
+							.get()
+							.build();
+					try (Response res = new OkHttpClient().newCall(req).execute()) {
 						this.adapter.cur_page += 1;
-						InputStream json_stream = res.getEntity().getContent();
-						RemoteVoiceData[] vdlist = JSON.decode(json_stream, RemoteVoiceData[].class);
-						json_stream.close();
-						return vdlist;
+						if (res.body() == null) {
+							return null;
+						}
+						try (var json_stream = res.body().byteStream()) {
+							RemoteVoiceData[] vdlist = JSON.decode(json_stream, RemoteVoiceData[].class);
+							return vdlist;
+						}
 					} catch (IOException e) {
 						Log.e(this.getClass().toString(), "Failed to load from server.");
 						e.printStackTrace();
 						return null;
-					} catch (Exception e) {
-						Log.e(this.getClass().toString(), "Unknwon Exception in AsyncTask!!");
-						e.printStackTrace();
-						return null;
-					} finally {
-						try {
-							client.close();
-						} catch (Exception e) {
-							// ignore
-						}
 					}
-
-					 */
-					return null;
  				}
 
 				protected void onPostExecute(RemoteVoiceData[] vdlist) {
@@ -362,9 +360,9 @@ public class DownloadActivity extends Activity {
 	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void setupActionBar() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			getActionBar().setDisplayHomeAsUpEnabled(true);
-		}
+		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+		//	getActionBar().setDisplayHomeAsUpEnabled(true);
+		//}
 	}
 
 	@Override
@@ -425,6 +423,7 @@ public class DownloadActivity extends Activity {
 		}
 	}
 	
+	@SuppressLint("StaticFieldLeak")
 	public boolean onContextItemSelected(MenuItem item) {
 		RemoteVoiceData rvd = this.rvd_list_adapter.getItemById(item.getGroupId());
 		if (rvd == null) return true;

@@ -1,26 +1,18 @@
 package jp.nekoteki.android.navivoicechanger;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-/*
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.message.BasicNameValuePair;
-*/
-
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
-//import android.net.http.AndroidHttpClient;
 import android.util.Log;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class RemoteVoiceData {
 	private int id;
@@ -118,57 +110,39 @@ public class RemoteVoiceData {
 	
 	protected void downloadFile(String url, File file) throws IOException {
 		Log.i(this.getClass().toString(), "Start download: "+url+" -> "+file.getAbsolutePath());
-		/*
-		InputStream is = null;
-		FileOutputStream os = null;
-		AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
-		try {
-			Log.i(this.getClass().toString(), "Loading URL: "+ url);
-			HttpResponse res;
-			res = client.execute(new HttpGet(url));
-			if (res.getStatusLine().getStatusCode() != 200) {
-				String msg = "Server returns bad status code: "+ Integer.toString(res.getStatusLine().getStatusCode());
+
+		Request req = new Request.Builder()
+				.url(url)
+				.get()
+				.build();
+		try (Response res = new OkHttpClient().newCall(req).execute()) {
+			if (res.code() != 200 || res.body() == null) {
+				String msg = "Server returns bad status code: "+ Integer.toString(res.code());
 				Log.e("VoiceData", msg);
 				throw new IOException(msg);
 			}
-			is = res.getEntity().getContent();
-			os = new FileOutputStream(file);
-			VoiceData.copyStream(is, os);
-		} finally {
-			client.close();
-			if (os != null)
-				os.close();
-			if (is != null)
-				is.close();
-		}*/
+			try (var is = res.body().byteStream()) {
+				try (var os = new FileOutputStream(file)) {
+					VoiceData.copyStream(is, os);
+				}
+			}
+		}
 	}
 	
 	protected void addDownloadCount(Context context) throws IOException {
-		/*
-		AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
-		String url = Config.get(context, "server_url_base")
-				+ "/navi_voices/" + Integer.toString(this.getId()) + "/dl_log_entries.json"; 
-
-		Log.i(this.getClass().toString(), "Loading URL: "+ url);
-		HttpResponse res;
-
-		HttpPost httppost = new HttpPost(url);
-		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-		nameValuePairs.add(new BasicNameValuePair("dl_log_entry[ident]", Config.get(context, "ident")));
-		httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-		try {
-			res = client.execute(httppost);
-		} finally {
-			client.close();
+		Request req = new Request.Builder()
+				.url(Config.get(context, "server_url_base")+ "/navi_voices/" + Integer.toString(this.getId()) + "/dl_log_entries.json")
+				.post(new FormBody.Builder()
+						.add("dl_log_entry[ident]", Config.get(context, "ident"))
+						.build())
+				.build();
+		try (Response res = new OkHttpClient().newCall(req).execute()) {
+			if (res.code() != 201) {
+				String msg = "Server returns bad status code: "+ Integer.toString(res.code());
+				Log.e(this.getClass().toString(), msg);
+				throw new IOException(msg);
+			}
 		}
-		if (res.getStatusLine().getStatusCode() != 201) {
-			String msg = "Server returns bad status code: "+ Integer.toString(res.getStatusLine().getStatusCode());
-			Log.e(this.getClass().toString(), msg);
-			throw new IOException(msg);
-		}
-
-		 */
 	}
 	
 	public void delete() {

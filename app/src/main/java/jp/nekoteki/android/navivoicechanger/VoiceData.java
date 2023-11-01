@@ -1,5 +1,19 @@
 package jp.nekoteki.android.navivoicechanger;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.res.AssetManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.util.Log;
+import android.view.Gravity;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
+import android.widget.Toast;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -17,29 +31,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipException;
 
-/*
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.message.BasicNameValuePair;
-*/
-
-import android.media.MediaPlayer;
-import android.net.Uri;
-//import android.net.http.AndroidHttpClient;
-import android.os.AsyncTask;
-import android.util.Log;
-import android.view.Gravity;
-import android.widget.LinearLayout;
-import android.widget.RatingBar;
-import android.widget.Toast;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.res.AssetManager;
-
 import io.github.kik.navivoicechangerex.R;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 class VoiceDataInstallError extends Exception {};
 class DataDirNotFound extends VoiceDataInstallError {};
@@ -518,36 +514,22 @@ public class VoiceData {
 	}
 	
 	public void rate(int value) throws IOException {
-		/*
 		String url = Config.get(this.getContext(), "server_url_base")
-						+ "/navi_voices/" + Integer.toString(this.getId()) + "/ratings.json"; 
-		Log.i(this.getClass().toString(), "Send rating: "+url);
-		AndroidHttpClient client = AndroidHttpClient.newInstance("NaviVoiceChanger");
-
-		HttpResponse res;
-		HttpPost httppost = new HttpPost(url);
-
-		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-		nameValuePairs.add(new BasicNameValuePair("rating[value]", Integer.toString(value)));
-		nameValuePairs.add(new BasicNameValuePair("rating[ident]", Config.get(this.getContext(), "ident")));
-		httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-		try {
-			res = client.execute(httppost);
-		} finally {
-			client.close();
+				+ "/navi_voices/" + Integer.toString(this.getId()) + "/ratings.json";
+		Request req = new Request.Builder()
+				.url(url)
+				.post(new FormBody.Builder()
+						.add("rating[value]", Integer.toString(value))
+						.add("rating[ident]", Config.get(this.getContext(), "ident"))
+						.build())
+				.build();
+		try (Response res = new OkHttpClient().newCall(req).execute()) {
+			if (res.code() != 201) {
+				String msg = "Server returns bad status code on rating: "+ Integer.toString(res.code());
+				Log.e(this.getClass().getName(), msg);
+				throw new IOException(msg);
+			}
 		}
-		if (res == null) {
-			String msg = "Cant get reponse on rating";
-			Log.e(this.getClass().getName(), msg);
-			throw new IOException(msg);
-		} else if (res.getStatusLine().getStatusCode() != 201) {
-			String msg = "Server returns bad status code on rating: "+ Integer.toString(res.getStatusLine().getStatusCode());
-			Log.e(this.getClass().getName(), msg);
-			throw new IOException(msg);
-		}
-
-		 */
 	}
 	
 	public void promptToRate(Context context) {
@@ -568,6 +550,7 @@ public class VoiceData {
 			public Context context;
 			public RatingBar ratebar;
 				
+			@SuppressLint("StaticFieldLeak")
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				new AsyncTask<Object, Void, Boolean>() {

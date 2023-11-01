@@ -1,5 +1,8 @@
 package jp.nekoteki.android.navivoicechanger;
 
+import android.content.Context;
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,9 +12,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import android.content.Context;
-import android.util.Log;
 
 public class Config {
 	final static public String CONF_FILE = "config.ini";

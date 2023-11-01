@@ -1,15 +1,14 @@
 package jp.nekoteki.android.navivoicechanger;
 
-import android.os.Bundle;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.os.Build;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-//import android.support.v4.app.NavUtils;
-import android.annotation.TargetApi;
-import android.os.Build;
 
 import io.github.kik.navivoicechangerex.R;
 

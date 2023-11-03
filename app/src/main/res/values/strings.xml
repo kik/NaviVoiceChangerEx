@@ -56,4 +56,8 @@
     <string name="author">作者: %s</string>
     <string name="downloads">ダウンロード数: %d</string>
     <string name="anonymous">(匿名)</string>
+    <string name="google_map_network_tts">ネットワークTTS</string>
+    <string name="title_activity_settings">設定</string>
+    <string name="menu_settings">設定</string>
+    <string name="google_map">Googleマップ</string>
 </resources>

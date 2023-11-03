@@ -3,12 +3,16 @@ package jp.nekoteki.android.navivoicechanger;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 
 import java.util.UUID;
 
+import io.github.kik.navivoicechangerex.App;
 import io.github.kik.navivoicechangerex.R;
+import io.github.kik.navivoicechangerex.SettingsActivity;
 
 public class MainMenuActivity extends Activity {
 
@@ -23,7 +27,22 @@ public class MainMenuActivity extends Activity {
 		findViewById(R.id.btn_menu_maint).setOnClickListener(v -> startActivity(new Intent(MainMenuActivity.this, MaintActivity.class)));
 		
 		findViewById(R.id.btn_download).setOnClickListener(v -> startActivity(new Intent(MainMenuActivity.this, DownloadActivity.class)));
-		
+
+		findViewById(R.id.btn_menu_settings).setOnClickListener(v -> startActivity(new Intent(MainMenuActivity.this, SettingsActivity.class)));
+		// XPosedがインストールされているときだけ設定画面を有効にする
+		// でもデバッグビルドのときも設定画面を出したい
+		findViewById(R.id.btn_menu_settings).setEnabled(false);
+		App.xposed.thenRun(() -> {
+			runOnUiThread(() -> {
+				findViewById(R.id.btn_menu_settings).setEnabled(true);
+			});
+		});
+		if (App.isDebuggable(this)) {
+			new Handler(getMainLooper()).postDelayed(() -> {
+				findViewById(R.id.btn_menu_settings).setEnabled(true);
+			}, 5000);
+		}
+
 		String tos_agree = Config.get(getApplicationContext(), "tos_agree"); 
 		if (tos_agree == null || !tos_agree.equals("1")) {
 			AlertDialog.Builder dialog = new AlertDialog.Builder(this);

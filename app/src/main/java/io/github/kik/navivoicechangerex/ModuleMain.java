@@ -1,6 +1,7 @@
 package io.github.kik.navivoicechangerex;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.util.Pair;
 
@@ -29,11 +30,17 @@ import io.github.libxposed.api.annotations.XposedHooker;
 
 public class ModuleMain extends XposedModule {
     private static ModuleMain module;
+    private static SharedPreferences prefs;
 
     public ModuleMain(@NonNull XposedInterface base, @NonNull ModuleLoadedParam param) {
         super(base, param);
         log("ModuleMain at " + param.getProcessName());
         module = this;
+        prefs = getRemotePreferences("io.github.kik.navivoicechangerex_preferences");
+        log("remote preferences");
+        for (var v : prefs.getAll().entrySet()) {
+            log("  entry = " + v);
+        }
     }
 
     @Override

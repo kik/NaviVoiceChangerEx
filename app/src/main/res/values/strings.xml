@@ -60,4 +60,12 @@
     <string name="title_activity_settings">設定</string>
     <string name="menu_settings">設定</string>
     <string name="google_map">Googleマップ</string>
+    <string name="remote_tts">リモートTTSサービス</string>
+    <string name="enable_voicevox_engine">VOICEVOXエンジンを使用する</string>
+    <string name="url">URL</string>
+    <string name="username">ユーザー名</string>
+    <string name="password">パスワード</string>
+    <string name="voicevox_engine">VOICEVOXエンジン</string>
+    <string name="get_voicevox_voices">ボイス一覧を取得</string>
+    <string name="voice_selection">ボイス選択</string>
 </resources>

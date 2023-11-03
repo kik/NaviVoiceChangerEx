@@ -10,4 +10,30 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/remote_tts">
+        <PreferenceCategory app:title="@string/voicevox_engine">
+            <EditTextPreference
+                app:key="voicevox_engine_url"
+                app:title="@string/url"
+                app:useSimpleSummaryProvider="true" />
+            <EditTextPreference
+                app:key="voicevox_engine_username"
+                app:title="@string/username"
+                app:defaultValue=""
+                app:useSimpleSummaryProvider="true" />
+            <EditTextPreference
+                app:key="voicevox_engine_password"
+                app:title="@string/password"
+                app:defaultValue=""
+                app:useSimpleSummaryProvider="true" />
+            <Preference
+                app:key="get_voicevox_voices"
+                app:title="@string/get_voicevox_voices" />
+        </PreferenceCategory>
+    </PreferenceCategory>
+    <PreferenceCategory app:title="@string/voice_selection">
+        <ListPreference
+            app:key="voice"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -7,12 +7,16 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import io.github.libxposed.service.XposedService;
 import io.github.libxposed.service.XposedServiceHelper;
 
 public class App {
+    public static final ExecutorService executor = Executors.newSingleThreadExecutor();
     public static CompletableFuture<XposedService> xposed = getXposedService();
 
     private static CompletableFuture<XposedService> getXposedService()

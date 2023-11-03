@@ -41,13 +41,15 @@ public class VoiceVoxEngineApi {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Player {
         public final String name;
+        public final String uuid;
         public final String version;
         public final List<Style> styles;
 
         @JsonCreator
-        public Player(@JsonProperty("name") String name, @JsonProperty("version") String version, @JsonProperty("styles") List<Style> styles)
+        public Player(@JsonProperty("name") String name, @JsonProperty("speaker_uuid") String uuid, @JsonProperty("version") String version, @JsonProperty("styles") List<Style> styles)
         {
             this.name = name;
+            this.uuid = uuid;
             this.version = version;
             this.styles = Collections.unmodifiableList(styles);
         }

@@ -9,9 +9,15 @@ import android.widget.Toast;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -46,6 +52,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
+        private List<VoiceVoxEngineApi.Player> playerList;
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
@@ -68,15 +76,18 @@ public class SettingsActivity extends AppCompatActivity {
                             prefs.getString("voicevox_engine_password", null));
                     try {
                         var players = api.players();
-                        for (var player: players) {
-                            Log.i(getClass().getName(), "palyer " + player.name);
-                            for (var style: player.styles) {
-                                Log.i(getClass().getName(), "style " + style.name + " id = " + style.id);
-                            }
-                        }
                         getActivity().runOnUiThread(() -> {
                             Toast.makeText(getContext(), "voicevox api success", Toast.LENGTH_SHORT).show();
                             button.setEnabled(true);
+                            updatePlayerList(players);
+                            var mapper = new ObjectMapper();
+                            try {
+                                getPreferenceManager().getSharedPreferences()
+                                        .edit()
+                                        .putString("voicevox_voices", mapper.writeValueAsString(players))
+                                        .apply();
+                            } catch (JsonProcessingException ignore) {
+                            }
                         });
                     } catch (IOException ioe) {
                         Log.w(getClass().getName(), "players() failed", ioe);
@@ -87,6 +98,40 @@ public class SettingsActivity extends AppCompatActivity {
                 });
                 return true;
             });
+
+            var players = getPreferenceManager().getSharedPreferences().getString("voicevox_voices", "[]");
+            var mapper = new ObjectMapper();
+            try {
+                updatePlayerList(mapper.readValue(players, new TypeReference<List<VoiceVoxEngineApi.Player>>() {}));
+            } catch (JsonProcessingException ignore) {
+            }
+        }
+
+        private void updatePlayerList(final List<VoiceVoxEngineApi.Player> players) {
+            this.playerList = players;
+            final var prefPlayer = (ListPreference)findPreference("player");
+            final var prefStyle = (ListPreference)findPreference("style");
+            prefPlayer.setEntries(players.stream().map(p -> p.name).toArray(String[]::new));
+            prefPlayer.setEntryValues(players.stream().map(p -> p.uuid).toArray(String[]::new));
+            prefPlayer.setOnPreferenceChangeListener((pref, v) -> {
+                return updateStyle((String)v);
+            });
+            updateStyle(prefPlayer.getValue());
+        }
+
+        private boolean updateStyle(String playerId) {
+            final var prefStyle = (ListPreference)findPreference("style");
+            var player = this.playerList.stream().filter(p -> p.uuid.equals(playerId)).findFirst();
+            if (player.isPresent()) {
+                var styles = player.get().styles;
+                prefStyle.setEntries(styles.stream().map(s -> s.name).toArray(String[]::new));
+                var values = styles.stream().map(s -> Integer.toString(s.id)).toArray(String[]::new);
+                prefStyle.setEntryValues(values);
+                prefStyle.setValue(Arrays.stream(values).findFirst().orElse(null));
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }

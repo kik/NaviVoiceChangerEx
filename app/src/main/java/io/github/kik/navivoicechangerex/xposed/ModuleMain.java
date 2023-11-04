@@ -1,8 +1,7 @@
-package io.github.kik.navivoicechangerex;
+package io.github.kik.navivoicechangerex.xposed;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -12,12 +11,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

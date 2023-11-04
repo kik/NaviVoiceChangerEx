@@ -7,7 +7,10 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +20,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.github.kik.navivoicechangerex.VoiceVoxEngineApi;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
 import io.github.libxposed.api.annotations.AfterInvocation;
@@ -25,17 +29,75 @@ import io.github.libxposed.api.annotations.XposedHooker;
 
 public class ModuleMain extends XposedModule {
     private static ModuleMain module;
-    private static SharedPreferences prefs;
+
+    private static class Preferences {
+        @NonNull
+        public final String googleMapNetworkTtsConfig;
+        @NonNull
+        public final String voicevoxEngineUrl;
+        @NonNull
+        public final String voicevoxUsername;
+        @NonNull
+        public final String voiceboxPassword;
+        public final int voiceboxStyleId;
+
+        public Preferences()
+        {
+            googleMapNetworkTtsConfig = "default";
+            voicevoxEngineUrl = "";
+            voicevoxUsername = "";
+            voiceboxPassword = "";
+            voiceboxStyleId = 0;
+        }
+
+        public Preferences(@NonNull SharedPreferences prefs, @NonNull Preferences old)
+        {
+            googleMapNetworkTtsConfig = prefs.getString("google_map_network_tts", old.googleMapNetworkTtsConfig);
+            voicevoxEngineUrl = prefs.getString("voicevox_engine_url", old.voicevoxEngineUrl);
+            voicevoxUsername = prefs.getString("voicevox_engine_username", old.voicevoxUsername);
+            voiceboxPassword = prefs.getString("voicevox_engine_password", old.voiceboxPassword);
+            voiceboxStyleId = Integer.parseInt(prefs.getString("style", Integer.toString(old.voiceboxStyleId)));
+        }
+
+        public boolean hookNetworkSynthesizer()
+        {
+            return !googleMapNetworkTtsConfig.equals("default");
+        }
+
+        public  boolean disableNetworkSynthesizer()
+        {
+            return googleMapNetworkTtsConfig.equals("disable");
+        }
+
+        @NonNull
+        public VoiceVoxEngineApi getVoiceVoxEngine()
+        {
+            return new VoiceVoxEngineApi(voicevoxEngineUrl, voicevoxUsername, voiceboxPassword);
+        }
+    }
+
+    @NonNull
+    private static Preferences preferences = new Preferences();
 
     public ModuleMain(@NonNull XposedInterface base, @NonNull ModuleLoadedParam param) {
         super(base, param);
         log("ModuleMain at " + param.getProcessName());
         module = this;
-        prefs = getRemotePreferences("io.github.kik.navivoicechangerex_preferences");
-        log("remote preferences");
-        for (var v : prefs.getAll().entrySet()) {
-            log("  entry = " + v);
-        }
+        var prefs = getRemotePreferences("io.github.kik.navivoicechangerex_preferences");
+        loadSharedPreferences(prefs);
+        prefs.registerOnSharedPreferenceChangeListener((p, s) -> {
+            loadSharedPreferences(p);
+        });
+    }
+
+    private static synchronized void loadSharedPreferences(@NonNull SharedPreferences prefs) {
+        preferences = new Preferences(prefs, preferences);
+    }
+
+    @NonNull
+    private static synchronized Preferences getPreferences()
+    {
+        return preferences;
     }
 
     @Override
@@ -74,6 +136,47 @@ public class ModuleMain extends XposedModule {
     }
 
     @XposedHooker
+    private static class SynthesizeHook implements XposedInterface.Hooker
+    {
+        @BeforeInvocation
+        public static SynthesizeHook beforeInvocation(BeforeHookCallback callback) {
+            module.log("method " + callback.getMember() + " called with " + List.of(callback.getArgs()));
+            Preferences p = getPreferences();
+            if (p.hookNetworkSynthesizer()) {
+                if (p.disableNetworkSynthesizer()) {
+                    callback.returnAndSkip(false);
+                } else {
+                    var api = p.getVoiceVoxEngine();
+                    var p1 = callback.getArgs()[0];
+                    var path = (String)callback.getArgs()[1];
+                    boolean ret = false;
+                    try {
+                        Field f = p1.getClass().getField("a");
+                        var text = (String)f.get(p1);
+                        String json = api.audio_query(p.voiceboxStyleId, text);
+                        byte[] audio = api.synthesis(p.voiceboxStyleId, json);
+                        try (var os = new FileOutputStream(path)) {
+                            os.write(audio);
+                        }
+                        ret = true;
+                    } catch (IOException ioe) {
+                        module.log("remote TTS failed", ioe);
+                    } catch (Exception e) {
+                        module.log("hook parameter error", e);
+                    }
+                    callback.returnAndSkip(ret);
+                }
+            }
+            return new SynthesizeHook();
+        }
+
+        @AfterInvocation
+        public static void afterInvocation(AfterHookCallback callback, SynthesizeHook context) {
+            module.log("method " + callback.getMember() + " return with " + callback.getResult());
+        }
+    }
+
+    @XposedHooker
     private static class InspectHook implements XposedInterface.Hooker
     {
         @BeforeInvocation
@@ -84,22 +187,6 @@ public class ModuleMain extends XposedModule {
 
         @AfterInvocation
         public static void afterInvocation(AfterHookCallback callback, InspectHook context) {
-            module.log("method " + callback.getMember() + " return with " + callback.getResult());
-        }
-    }
-
-    @XposedHooker
-    private static class SynthesizeHook implements XposedInterface.Hooker
-    {
-        @BeforeInvocation
-        public static SynthesizeHook beforeInvocation(BeforeHookCallback callback) {
-            module.log("method " + callback.getMember() + " called with " + List.of(callback.getArgs()));
-            callback.returnAndSkip(false);
-            return new SynthesizeHook();
-        }
-
-        @AfterInvocation
-        public static void afterInvocation(AfterHookCallback callback, SynthesizeHook context) {
             module.log("method " + callback.getMember() + " return with " + callback.getResult());
         }
     }

@@ -6,14 +6,20 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.WireFormat;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -135,12 +141,110 @@ public class ModuleMain extends XposedModule {
         }
     }
 
+    //
+    // MobileMaps/SynthesizeTextの引数
+    //
+    private static void dumpProto(byte[] obj, String cls, String indent) throws IOException {
+        var reader = CodedInputStream.newInstance(obj);
+        module.log(indent + "{");
+        while (!reader.isAtEnd()) {
+            int tag = reader.readTag();
+            int field = WireFormat.getTagFieldNumber(tag);
+            int type = WireFormat.getTagWireType(tag);
+            switch (type) {
+                case WireFormat.WIRETYPE_VARINT: {
+                    long value = reader.readRawVarint64();
+                    module.log(indent + "  " + field + " VARIANT: " + value);
+                    break;
+                }
+                case WireFormat.WIRETYPE_FIXED64: {
+                    long value = reader.readFixed64();
+                    module.log(indent + "  " + field + " FIXED64: " + value);
+                    break;
+                }
+                case WireFormat.WIRETYPE_LENGTH_DELIMITED: {
+                    if (cls.equals("Item") && field == 1) {
+                        module.log(indent + "  " + field + " Str: " + reader.readString());
+                        break;
+                    }
+                    byte[] value = reader.readByteArray();
+                    if (cls.equals("Top") && field == 2) {
+                        module.log(indent + "  " + field + " Body:");
+                        dumpProto(value, "Body", indent + "  ");
+                        break;
+                    } else if (cls.equals("Body") && field == 2) {
+                        module.log(indent + "  " + field + " Element:");
+                        dumpProto(value, "Element", indent + "  ");
+                        break;
+                    } else if (cls.equals("Body") && field == 5) {
+                        module.log(indent + "  " + field + " Tail:");
+                        dumpProto(value, "Tail", indent + "  ");
+                        break;
+                    } else if (cls.equals("Element") && field == 1) {
+                        module.log(indent + "  " + field + " Item:");
+                        dumpProto(value, "Item", indent + "  ");
+                        break;
+                    }
+                    var builder = new StringBuilder();
+                    builder.append("[ ");
+                    for (byte b : value) {
+                        builder.append(String.format("%02X ", b & 0xFF));
+                    }
+                    builder.append("]");
+                    module.log(indent + "  " + field + " LENGTH: " + builder.toString());
+                    break;
+                }
+                case WireFormat.WIRETYPE_FIXED32: {
+                    int value = reader.readFixed32();
+                    module.log(indent + "  " + field + " FIXED32: " + value);
+                    break;
+                }
+                default:
+            }
+        }
+        module.log(indent + "}");
+    }
+
+    private static void dumpTextStructure(Object obj) {
+        try {
+            Field f = obj.getClass().getField("b");
+            Iterable<Byte> structure = (Iterable<Byte>)f.get(obj);
+            var it = structure.iterator();
+            while (it.hasNext()) {
+                var buf1 = new StringBuilder();
+                var buf2 = new StringBuilder();
+                for (int i = 0; i < 16; i++) {
+                    if (it.hasNext()) {
+                        byte b = it.next();
+                        buf1.append(String.format("%02X ", b & 0xFF));
+                        if (i == 7) {
+                            buf1.append(' ');
+                        }
+                        buf2.append(0x20 <= b && b < 0x7F ? (char)b : '.');
+                    } else {
+                        buf1.append(i == 7 ? "   " : "  ");
+                    }
+                }
+                module.log(buf1.toString() + "    " + buf2.toString());
+            }
+            var os = new ByteArrayOutputStream();
+            for (byte b : structure) {
+                os.write(b);
+            }
+            os.close();
+            var array = os.toByteArray();
+            dumpProto(array, "Top", "");
+        } catch (Exception ignore) {
+        }
+    }
+
     @XposedHooker
     private static class SynthesizeHook implements XposedInterface.Hooker
     {
         @BeforeInvocation
         public static SynthesizeHook beforeInvocation(BeforeHookCallback callback) {
             module.log("method " + callback.getMember() + " called with " + List.of(callback.getArgs()));
+            dumpTextStructure(callback.getArgs()[0]);
             Preferences p = getPreferences();
             if (p.hookNetworkSynthesizer()) {
                 if (p.disableNetworkSynthesizer()) {
@@ -172,6 +276,40 @@ public class ModuleMain extends XposedModule {
 
         @AfterInvocation
         public static void afterInvocation(AfterHookCallback callback, SynthesizeHook context) {
+            module.log("method " + callback.getMember() + " return with " + callback.getResult());
+        }
+    }
+
+    //
+    // 音声合成キャッシュのIDの生成にボイス名をいれるようにする
+    //
+    @XposedHooker
+    private static class SetVoiceNameHook implements XposedInterface.Hooker
+    {
+        @BeforeInvocation
+        public static SetVoiceNameHook beforeInvocation(BeforeHookCallback callback) {
+            module.log("method " + callback.getMember() + " called with " + List.of(callback.getArgs()));
+            return new SetVoiceNameHook();
+        }
+
+        @AfterInvocation
+        public static void afterInvocation(AfterHookCallback callback, SetVoiceNameHook context) {
+            Preferences p = getPreferences();
+            if (p.hookNetworkSynthesizer()) {
+                if (!p.disableNetworkSynthesizer()) {
+                    var ret = callback.getResult();
+                    Arrays.stream(ret.getClass().getDeclaredFields())
+                            .filter(f -> f.getType().equals(String.class))
+                            .forEach(f -> {
+                                try {
+                                    f.setAccessible(true);
+                                    f.set(ret, "VOICEVOX-" + p.voiceboxStyleId);
+                                } catch (IllegalAccessException e) {
+                                    module.log("setting ret.voice failed", e);
+                                }
+                            });
+                }
+            }
             module.log("method " + callback.getMember() + " return with " + callback.getResult());
         }
     }
@@ -283,7 +421,7 @@ public class ModuleMain extends XposedModule {
                     .map(Class::getDeclaredConstructors)
                     .filter(ctors -> ctors.length == 1)
                     .map(ctors -> ctors[0])
-                    .filter(ctor -> ctor.getParameterCount() >= 12)
+                    .filter(ctor -> ctor.getParameterCount() == 12)
                     // <init>(PriorityBlockingQueue, ..., Executor executor, Executor executor2, ...)
                     .filter(ctor -> {
                         var paramNames = Arrays.stream(ctor.getParameters()).map(param -> param.getType().getName()).collect(Collectors.toList());
@@ -331,6 +469,51 @@ public class ModuleMain extends XposedModule {
                 hook(method, SynthesizeHook.class);
             });
 
+            // find NetworkTtsQueueManager
+            final Class<?>[] ctorNetworkTtsQueueManagerParams = {
+                    ctorNetworkTtsQueueRunner.getParameters()[4].getType(),
+                    ctorNetworkTtsQueueRunner.getParameters()[3].getType(),
+                    ctorNetworkTtsQueueRunner.getParameters()[7].getType(),
+                    ctorNetworkTtsQueueRunner.getParameters()[0].getType(),
+                    ctorNetworkTtsQueueRunner.getDeclaringClass(),
+                    ctorNetworkTtsQueueRunner.getParameters()[11].getType(),
+            };
+            final Constructor<?> ctorNetworkTtsQueueManager = classes()
+                    .map(Class::getDeclaredConstructors)
+                    .filter(ctors -> ctors.length == 1)
+                    .map(ctors -> ctors[0])
+                    .filter(ctor -> Arrays.equals(ctor.getParameterTypes(), ctorNetworkTtsQueueManagerParams))
+                    .findFirst().orElse(null);
+
+            if (ctorNetworkTtsQueueManager == null) {
+                log("ctorNetworkTtsQueueManager not found");
+                return;
+            }
+            log("ctorNetworkTtsQueueManager = " + ctorNetworkTtsQueueManager);
+            final Class<?> clsNetworkTtsQueueManager = ctorNetworkTtsQueueManager.getDeclaringClass();
+
+            final Method methodGetGuidanceText = Arrays.stream(clsNetworkTtsQueueManager.getDeclaredMethods())
+                    .filter(m -> Modifier.isStatic(m.getModifiers()))
+                    .filter(m -> m.getParameterCount() == 3)
+                    .filter(m -> {
+                                var types = m.getParameterTypes();
+                                if (types[0].equals(ctorNetworkTtsQueueRunner.getParameters()[3].getType()) &&
+                                        types[2].equals(ctorNetworkTtsQueueRunner.getParameters()[11].getType())) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            })
+                    .findFirst().orElse(null);
+
+            if (methodGetGuidanceText == null) {
+                log("methodGetGuidanceText not found");
+                return;
+            }
+            log("methodGetGuidanceText = " + methodGetGuidanceText);
+
+            hook(methodGetGuidanceText, SetVoiceNameHook.class);
+
             runExtra();
         }
 
@@ -348,7 +531,7 @@ public class ModuleMain extends XposedModule {
             try {
                 //hook(getMethod("azuh", "c"), InspectCallStackHook.class);
                 //hook(getMethod("azvf", "e"), InspectCallStackHook.class);
-                hook(getMethod("bade", "d"), InspectCallStackHook.class);
+                //hook(getMethod("bade", "d"), InspectCallStackHook.class);
             } catch (Exception e) {
                 log("runExtra", e);
             }

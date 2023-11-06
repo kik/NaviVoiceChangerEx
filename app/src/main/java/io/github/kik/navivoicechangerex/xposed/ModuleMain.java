@@ -257,6 +257,8 @@ public class ModuleMain extends XposedModule {
                     try {
                         Field f = p1.getClass().getField("a");
                         var text = (String)f.get(p1);
+                        text = text.replaceAll(" ", "");
+                        text = text.replaceAll("、、", "、");
                         String json = api.audio_query(p.voiceboxStyleId, text);
                         byte[] audio = api.synthesis(p.voiceboxStyleId, json);
                         try (var os = new FileOutputStream(path)) {

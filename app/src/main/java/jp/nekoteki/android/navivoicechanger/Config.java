@@ -22,8 +22,7 @@ public class Config {
 		c.put("server_url_base", "http://nvc.nekoteki.jp");
 		DEFAULTS = Collections.unmodifiableMap(c);
 	}
-	
-	
+
 	public static String get(Context context, String name) {
 		Log.d("Config", "Getting config key: "+name);
 		String v = (String) getProp(context).get(name);

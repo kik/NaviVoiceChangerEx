@@ -1,6 +1,5 @@
 package jp.nekoteki.android.navivoicechanger;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -20,17 +19,19 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.util.List;
 
 import io.github.kik.navivoicechangerex.R;
 
 
-public class InstallListActivity extends Activity {
+public class InstallListActivity extends AppCompatActivity {
 	final static int C_MENU_PREVIEW = 0;
 	final static int C_MENU_INSTALL = 1;
 	final static int C_MENU_RATE    = 2;
 	final static int C_MENU_DELETE  = 3;
-	
+
 	private class ListVoiceDataAdapter extends BaseAdapter {
 		private Context context;
 		private List<VoiceData> list;

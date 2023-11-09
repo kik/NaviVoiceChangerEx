@@ -52,8 +52,10 @@ public class CannedMessageParser {
     private static void writeMessageXml(ZipOutputStream zipOut, List<Entry> list) throws IOException {
         var xs = Xml.newSerializer();
         xs.setOutput(new OutputStreamWriter(zipOut, StandardCharsets.UTF_8));
+        xs.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
         xs.startTag(null, "voice_instructions");
         for (var e : list) {
+            if (e.id() < 0) continue;;
             xs.startTag(null, "canned_message");
             xs.attribute(null, "id", Integer.toString(e.id()));
             xs.text(e.file());
@@ -66,12 +68,14 @@ public class CannedMessageParser {
     private static void writeMessagePlist(ZipOutputStream zipOut, List<Entry> list) throws IOException {
         var xs = Xml.newSerializer();
         xs.setOutput(new OutputStreamWriter(zipOut, StandardCharsets.UTF_8));
+        xs.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
         xs.startDocument("UTF-8", null);
         xs.docdecl(" plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"");
         xs.startTag(null, "plist");
         xs.attribute(null, "version", "1.0");
         xs.startTag(null, "array");
         for (var e : list) {
+            if (e.id() < 0) continue;;
             xs.startTag(null, "dict");
 
             xs.startTag(null, "key");
@@ -286,6 +290,7 @@ public class CannedMessageParser {
                         }
                     }
                 }
+                xpp.next();
             }
             return list;
         } catch (XmlPullParserException e) {

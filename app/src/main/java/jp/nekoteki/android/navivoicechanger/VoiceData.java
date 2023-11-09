@@ -29,8 +29,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipException;
 
+import io.github.kik.navivoicechangerex.App;
+import io.github.kik.navivoicechangerex.CannedMessageParser;
 import io.github.kik.navivoicechangerex.R;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -437,25 +440,17 @@ public class VoiceData {
 	
 	public void install() throws BrokenArchive, ZipException, IOException, DataDirNotFound {
 		this.validate();
-		
-		if (!hasTargetVoiceData(this.getContext()))
-			throw new DataDirNotFound();
 
-		purgeVoiceDataFromNavi(this.getContext());
-		
-		Log.i("VoiceData", "Install start for "+this.toString());
-		File voice_archive = new File(this.getPath(), ARCHIVE_FILENAME);
-		try {
-			for (File localedir: getTargetVoiceDataDir(this.getContext()).listFiles()) {
-				if (!localedir.isDirectory()) continue;
-				// To make sure, just copy to both...
-				copyFile(voice_archive, new File(localedir, ARCHIVE_FILENAME));
-				copyFile(voice_archive, new File(localedir, ARCHIVE_FILENAME_IMPERIAL));
+		try (var is = new FileInputStream(new File(this.getPath(), ARCHIVE_FILENAME))) {
+			App.xposed.get().deleteRemoteFile("voice_instructions_unitless.zip");
+			try (var dst = App.xposed.get().openRemoteFile("voice_instructions_unitless.zip")) {
+				try (var os = new FileOutputStream(dst.getFileDescriptor())) {
+					CannedMessageParser.convert(os, is);
+				}
 			}
-		} catch (NullPointerException e) {
-			// ignore
+		} catch (InterruptedException | ExecutionException ignore) {
+			throw new DataDirNotFound();
 		}
-		
 		StaticUtils.killMapsProcess(this.getContext());
 		Log.i("VoiceData", "Install finished!");
 	}

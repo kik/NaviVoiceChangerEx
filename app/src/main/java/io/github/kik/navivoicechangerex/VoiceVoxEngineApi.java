@@ -24,11 +24,14 @@ public class VoiceVoxEngineApi {
     private final String username;
     private final String passowrd;
 
+    private final OkHttpClient client;
+
     public VoiceVoxEngineApi(String url, String username, String password)
     {
         this.url = url;
         this.username = username;
         this.passowrd = password;
+        this.client = new OkHttpClient();
     }
 
     private Request.Builder requestBuilder(String command, Consumer<HttpUrl.Builder> buildUrl)
@@ -50,12 +53,12 @@ public class VoiceVoxEngineApi {
         return requestBuilder(command, null);
     }
 
-    public List<Player> players() throws IOException
+    public List<Player> speakers() throws IOException
     {
         var req = requestBuilder("speakers")
                 .get()
                 .build();
-        try (var res = new OkHttpClient().newCall(req).execute()) {
+        try (var res = client.newCall(req).execute()) {
             var mapper = new ObjectMapper();
             return mapper.readValue(res.body().string(), new TypeReference<List<Player>>() {});
         }
@@ -68,7 +71,7 @@ public class VoiceVoxEngineApi {
                         .addQueryParameter("text", text))
                 .post(RequestBody.create("", null))
                 .build();
-        try (var res = new OkHttpClient().newCall(req).execute()) {
+        try (var res = client.newCall(req).execute()) {
             return res.body().string();
         }
     }
@@ -79,7 +82,7 @@ public class VoiceVoxEngineApi {
                 urlBuilder -> urlBuilder.addQueryParameter("speaker", Integer.toString(styleId)))
                 .post(RequestBody.create(json, MediaType.parse("application/json")))
                 .build();
-        try (var res = new OkHttpClient().newCall(req).execute()) {
+        try (var res = client.newCall(req).execute()) {
             return res.body().bytes();
         }
     }

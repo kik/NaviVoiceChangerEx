@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -78,7 +77,7 @@ public class SettingsActivity extends AppCompatActivity {
                             prefs.getString("voicevox_engine_username", null),
                             prefs.getString("voicevox_engine_password", null));
                     try {
-                        var players = api.players();
+                        var players = api.speakers();
                         getActivity().runOnUiThread(() -> {
                             Toast.makeText(getContext(), "voicevox api success", Toast.LENGTH_SHORT).show();
                             button.setEnabled(true);

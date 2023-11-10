@@ -37,16 +37,19 @@ public class SettingsActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+        if (App.xposed() == null) {
+            // debugビルドだと、xposed無しで設定できる
+            // 設定画面の開発用機能
+            setTitle(getTitle() + " (no LSPosed)");
+        }
     }
 
     @Override
     public SharedPreferences getSharedPreferences(String name, int mode) {
         Log.i(this.getClass().toString(), "getSharedPreferences called: " + name);
-        try {
-            if (App.xposed.isDone()) {
-                return App.xposed.get().getRemotePreferences(name);
-            }
-        } catch (InterruptedException | ExecutionException ignore) {
+        var xposed = App.xposed();
+        if (xposed != null) {
+            return xposed.getRemotePreferences(name);
         }
         return super.getSharedPreferences(name, mode);
     }

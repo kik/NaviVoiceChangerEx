@@ -32,11 +32,9 @@ public class MainMenuActivity extends Activity {
 		// XPosedがインストールされているときだけ設定画面を有効にする
 		// でもデバッグビルドのときも設定画面を出したい
 		findViewById(R.id.btn_menu_settings).setEnabled(false);
-		App.xposed.thenRun(() -> {
-			runOnUiThread(() -> {
-				findViewById(R.id.btn_menu_settings).setEnabled(true);
-			});
-		});
+		App.waitXposed(xposed -> {
+			findViewById(R.id.btn_menu_settings).setEnabled(true);
+		}, getMainExecutor());
 		if (App.isDebuggable(this)) {
 			new Handler(getMainLooper()).postDelayed(() -> {
 				findViewById(R.id.btn_menu_settings).setEnabled(true);

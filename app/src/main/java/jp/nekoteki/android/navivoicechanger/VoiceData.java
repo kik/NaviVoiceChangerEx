@@ -442,14 +442,12 @@ public class VoiceData {
 		this.validate();
 
 		try (var is = new FileInputStream(new File(this.getPath(), ARCHIVE_FILENAME))) {
-			App.xposed.get().deleteRemoteFile("voice_instructions_unitless.zip");
-			try (var dst = App.xposed.get().openRemoteFile("voice_instructions_unitless.zip")) {
+			App.xposed().deleteRemoteFile("voice_instructions_unitless.zip");
+			try (var dst = App.xposed().openRemoteFile("voice_instructions_unitless.zip")) {
 				try (var os = new FileOutputStream(dst.getFileDescriptor())) {
 					CannedMessageParser.convert(os, is);
 				}
 			}
-		} catch (InterruptedException | ExecutionException ignore) {
-			throw new DataDirNotFound();
 		}
 		StaticUtils.killMapsProcess(this.getContext());
 		Log.i("VoiceData", "Install finished!");

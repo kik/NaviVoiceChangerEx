@@ -6,26 +6,26 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import java.util.concurrent.CompletableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import io.github.libxposed.service.XposedService;
 import io.github.libxposed.service.XposedServiceHelper;
 
 public class App {
     public static final ExecutorService executor = Executors.newSingleThreadExecutor();
-    public static CompletableFuture<XposedService> xposed = getXposedService();
+    private static final SettableFuture<XposedService> xposed = SettableFuture.create();
 
-    private static CompletableFuture<XposedService> getXposedService()
     {
-        var future = new CompletableFuture<XposedService>();
         XposedServiceHelper.registerListener(new XposedServiceHelper.OnServiceListener() {
             @Override
             public void onServiceBind(@NonNull XposedService service) {
-                future.complete(service);
+                xposed.set(service);
             }
 
             @Override
@@ -33,7 +33,24 @@ public class App {
                 Log.w(getClass().getName(), "XposedService died");
             }
         });
-        return future;
+    }
+
+    public static XposedService xposed() {
+        if (xposed.isDone()) {
+            while (true) {
+                try {
+                    return xposed.get();
+                } catch (InterruptedException| ExecutionException ignore) {
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void waitXposed(Consumer<XposedService> f, Executor executor) {
+        xposed.addListener(() -> {
+            f.accept(xposed());
+        }, executor);
     }
 
     public static boolean isDebuggable(Context context) {

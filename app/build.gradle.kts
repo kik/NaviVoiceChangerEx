@@ -57,6 +57,7 @@ dependencies {
     implementation("androidx.preference:preference:1.2.1")
     implementation("androidx.activity:activity-ktx:1.8.0")
     implementation("com.google.protobuf:protobuf-javalite:3.25.0")
+    implementation("com.google.guava:guava:32.1.3-android")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

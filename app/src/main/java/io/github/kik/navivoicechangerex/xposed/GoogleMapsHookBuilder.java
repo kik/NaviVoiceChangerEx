@@ -8,6 +8,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.Predicate;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.github.libxposed.api.XposedModuleInterface;
+import okhttp3.Cache;
 
 public class GoogleMapsHookBuilder extends AbstactHookBuilder {
     public static final int NR_CLASSES = 100000;
@@ -47,8 +49,8 @@ public class GoogleMapsHookBuilder extends AbstactHookBuilder {
         return list;
     }
 
-    private static class Specs {
-        Predicate<Class<?>> NetworkTtsQueueRunner() {
+    static class Specs {
+        static Predicate<Class<?>> NetworkTtsQueueRunner() {
             // public final class NetworkTtsQueueRunner implements Runnable
             // {
             //      public NetworkTtsQueueRunner(
@@ -74,82 +76,77 @@ public class GoogleMapsHookBuilder extends AbstactHookBuilder {
                     .filter(matchParam(6, Executor.class))
                     .anyMatch(matchParam(8, 9));
         }
+
+        static class NetworkTtsQueueRunnerContents {
+            public final Constructor<?> constructor;
+            public final Class<?> TtsSynthesizer;
+
+            public NetworkTtsQueueRunnerContents(Class<?> cls) {
+                ModuleMain.module.log("class NetworkTtsQueueRunner = " + cls.getName());
+                this.constructor = cls.getDeclaredConstructors()[0];
+                ModuleMain.module.log("NetworkTtsQueueRunner.<init> = " + this.constructor);
+                this.TtsSynthesizer = this.constructor.getParameterTypes()[8];
+                ModuleMain.module.log("interface TtsSynthesizer = " + this.TtsSynthesizer);
+            }
+        }
+
+        static class TtsSynthesizerContents {
+            public final Method synthesizeToFile;
+
+            public TtsSynthesizerContents(Class<?> cls) {
+                // boolean TtsSynthesizer#synthesizeToFile(VoiceAlert alert, String path)
+                this.synthesizeToFile = Arrays.stream(cls.getMethods())
+                        .filter(method -> method.getParameterCount() == 2)
+                        .filter(matchParam(1, String.class))
+                        .findFirst().orElse(null);
+                if (this.synthesizeToFile == null) {
+                    ModuleMain.module.log("method synthesizeToFile not found");
+                    return;
+                }
+                ModuleMain.module.log("method synthesizeToFile = " + this.synthesizeToFile);
+            }
+        }
     }
 
     public void run() {
+        loadCache();
         runApplicationCapture();
 
-        // public final class NetworkTtsQueueRunner implements Runnable
-        // {
-        //      public NetworkTtsQueueRunner(
-        //          PriorityBlockingQueue priorityBlockingQueue, ???, TtsTempManager ttsTempManager,
-        //          ApplicationParameters applicationParameters, ???, Executor executor, Executor executor2,
-        //          TtsStat ttsStat, TtsSynthesizer synthesizer1, TtsSynthesizer synthesizer2,
-        //          ???, Voice voice) {
-        // }
-        final Constructor<?> ctorNetworkTtsQueueRunner = classes()
-                // implements Runnable
-                .filter(implementExact(Runnable.class))
-                // unique constructor
-                .map(Class::getDeclaredConstructors)
-                .filter(ctors -> ctors.length == 1)
-                .map(ctors -> ctors[0])
-                .filter(ctor -> ctor.getParameterCount() == 12)
-                // <init>(PriorityBlockingQueue, ..., Executor executor, Executor executor2, ...)
-                .filter(ctor -> {
-                    var paramNames = Arrays.stream(ctor.getParameters()).map(param -> param.getType().getName()).collect(Collectors.toList());
-                    return paramNames.get(0).equals("java.util.concurrent.PriorityBlockingQueue") &&
-                            paramNames.get(5).equals("java.util.concurrent.Executor") &&
-                            paramNames.get(6).equals("java.util.concurrent.Executor") &&
-                            paramNames.get(8).equals(paramNames.get(9));
-                })
-                .findFirst().orElse(null);
-        if (ctorNetworkTtsQueueRunner == null) {
-            ModuleMain.module.log("NetworkTtsQueueRunner.<init> not found");
+        final Cached<Class<?>> clsNetworkTtsQueueRunner = findClass(
+                "NetworkTtsQueueRunner",
+                Specs.NetworkTtsQueueRunner());
+
+        if (clsNetworkTtsQueueRunner.get() == null) {
+            ModuleMain.module.log("NetworkTtsQueueRunner not found");
             return;
         }
-        ModuleMain.module.log("ctorNetworkTtsQueueRunner = " + ctorNetworkTtsQueueRunner);
-        ModuleMain.module.hook(ctorNetworkTtsQueueRunner, ModuleMain.InspectHook.class);
+        final var contentsNetworkTtsQueueRunner = new Specs.NetworkTtsQueueRunnerContents(clsNetworkTtsQueueRunner.get());
 
-        // public interface TtsSynthesizer
-        final Class<?> intfTtsSynthesizer = ctorNetworkTtsQueueRunner.getParameters()[8].getType();
-        ModuleMain.module.log("intfTtsSynthesizer = " + intfTtsSynthesizer);
+        ModuleMain.module.hook(contentsNetworkTtsQueueRunner.constructor, ModuleMain.InspectHook.class);
 
-        // boolean TtsSynthesizer#synthesizeToFile(VoiceAlert alert, String path)
-        final Method methodSynthesizeToFile = Arrays.stream(intfTtsSynthesizer.getMethods())
-                .filter(method -> method.getParameterCount() == 2)
-                .filter(method -> method.getParameters()[1].getType().equals(String.class))
-                .findFirst().orElse(null);
-        if (methodSynthesizeToFile == null) {
-            ModuleMain.module.log("methodSynthesizeToFile not found");
-            return;
-        }
-        ModuleMain.module.log("methodSynthesizeToFile = " + methodSynthesizeToFile);
+        final var contentsTtsSynthesizer = new Specs.TtsSynthesizerContents(contentsNetworkTtsQueueRunner.TtsSynthesizer);
 
-        final var methodSynthesizeToFileImpls = classes()
-                .filter(implementExact(intfTtsSynthesizer))
-                .flatMap(cls -> {
-                    try {
-                        var m = cls.getMethod(methodSynthesizeToFile.getName(), methodSynthesizeToFile.getParameterTypes());
-                        return Stream.of(m);
-                    } catch (NoSuchMethodException ignore) {
-                        return Stream.empty();
-                    }
-                }).collect(Collectors.toList());
-
-        methodSynthesizeToFileImpls.forEach(method -> {
-            ModuleMain.module.log("methodSynthesizeToFile impl = " + method);
+        final Cached<List<Class<?>>> TtsSynthesizerImpls = findClasses("TtsSynthesizerImpls",
+                implementExact(contentsNetworkTtsQueueRunner.TtsSynthesizer));
+        for (var impl : TtsSynthesizerImpls.get()) {
+            ModuleMain.module.log("class implements TtsSynthesizer = " + impl);
+            var method = getOverrideMethod(impl, contentsTtsSynthesizer.synthesizeToFile);
+            if (method == null) {
+                ModuleMain.module.log("synthesizeToFile not found: " + impl);
+                continue;
+            }
+            ModuleMain.module.log("hook synthesizeToFile: " + method);
             ModuleMain.module.hook(method, ModuleMain.SynthesizeHook.class);
-        });
+        }
 
         // find NetworkTtsQueueManager
         final Class<?>[] ctorNetworkTtsQueueManagerParams = {
-                ctorNetworkTtsQueueRunner.getParameters()[4].getType(),
-                ctorNetworkTtsQueueRunner.getParameters()[3].getType(),
-                ctorNetworkTtsQueueRunner.getParameters()[7].getType(),
-                ctorNetworkTtsQueueRunner.getParameters()[0].getType(),
-                ctorNetworkTtsQueueRunner.getDeclaringClass(),
-                ctorNetworkTtsQueueRunner.getParameters()[11].getType(),
+                contentsNetworkTtsQueueRunner.constructor.getParameters()[4].getType(),
+                contentsNetworkTtsQueueRunner.constructor.getParameters()[3].getType(),
+                contentsNetworkTtsQueueRunner.constructor.getParameters()[7].getType(),
+                contentsNetworkTtsQueueRunner.constructor.getParameters()[0].getType(),
+                contentsNetworkTtsQueueRunner.constructor.getDeclaringClass(),
+                contentsNetworkTtsQueueRunner.constructor.getParameters()[11].getType(),
         };
         final Constructor<?> ctorNetworkTtsQueueManager = classes()
                 .map(Class::getDeclaredConstructors)
@@ -170,8 +167,8 @@ public class GoogleMapsHookBuilder extends AbstactHookBuilder {
                 .filter(m -> m.getParameterCount() == 3)
                 .filter(m -> {
                     var types = m.getParameterTypes();
-                    if (types[0].equals(ctorNetworkTtsQueueRunner.getParameters()[3].getType()) &&
-                            types[2].equals(ctorNetworkTtsQueueRunner.getParameters()[11].getType())) {
+                    if (types[0].equals(contentsNetworkTtsQueueRunner.constructor.getParameters()[3].getType()) &&
+                            types[2].equals(contentsNetworkTtsQueueRunner.constructor.getParameters()[11].getType())) {
                         return true;
                     } else {
                         return false;
@@ -187,13 +184,7 @@ public class GoogleMapsHookBuilder extends AbstactHookBuilder {
 
         ModuleMain.module.hook(methodGetGuidanceText, ModuleMain.SetVoiceNameHook.class);
 
-        try {
-            //hook(File.class.getConstructor(File.class, String.class), FileConstructorHook.class);
-            //hook(getMethod("baay", "k"), StopCannedMessageBundleUpdateHook.class);
-        } catch (Exception e) {
-            ModuleMain.module.log("getMethod failed", e);
-        }
-
+        storeCache();
     }
 
     private void runApplicationCapture()

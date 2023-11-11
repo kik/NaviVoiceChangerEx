@@ -21,7 +21,7 @@ public class App {
     public static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final SettableFuture<XposedService> xposed = SettableFuture.create();
 
-    {
+    static {
         XposedServiceHelper.registerListener(new XposedServiceHelper.OnServiceListener() {
             @Override
             public void onServiceBind(@NonNull XposedService service) {

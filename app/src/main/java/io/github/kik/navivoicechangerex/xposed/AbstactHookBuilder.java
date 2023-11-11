@@ -1,7 +1,6 @@
 package io.github.kik.navivoicechangerex.xposed;
 
 import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Pair;
 
@@ -11,27 +10,27 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModuleInterface;
+import io.github.libxposed.api.annotations.AfterInvocation;
+import io.github.libxposed.api.annotations.BeforeInvocation;
+import io.github.libxposed.api.annotations.XposedHooker;
 
 public abstract class AbstactHookBuilder {
     protected final XposedModuleInterface.PackageLoadedParam moduleLoadedParam;
@@ -51,7 +50,6 @@ public abstract class AbstactHookBuilder {
             this.versionCode = version.second;
             this.versionName = version.first;
         }
-        var cacheName = param.getPackageName() + "/" + this.versionName;
         this.cacheStore = new Properties();
     }
 
@@ -275,4 +273,39 @@ public abstract class AbstactHookBuilder {
         };
     }
 
+
+    @XposedHooker
+    static class InspectHook implements XposedInterface.Hooker
+    {
+        @BeforeInvocation
+        public static InspectHook beforeInvocation(XposedInterface.BeforeHookCallback callback) {
+            ModuleMain.module.log("method " + callback.getMember() + " called with " + List.of(callback.getArgs()));
+            return new InspectHook();
+        }
+
+        @AfterInvocation
+        public static void afterInvocation(XposedInterface.AfterHookCallback callback, InspectHook context) {
+            ModuleMain.module.log("method " + callback.getMember() + " return with " + callback.getResult());
+        }
+    }
+
+    @XposedHooker
+    private static class InspectCallStackHook implements XposedInterface.Hooker
+    {
+        @BeforeInvocation
+        public static InspectCallStackHook beforeInvocation(XposedInterface.BeforeHookCallback callback) {
+            ModuleMain.module.log("method " + callback.getMember() + " called with " + List.of(callback.getArgs()));
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                ModuleMain.module.log("stacktrace", e);
+            }
+            return new InspectCallStackHook();
+        }
+
+        @AfterInvocation
+        public static void afterInvocation(XposedInterface.AfterHookCallback callback, InspectCallStackHook context) {
+            ModuleMain.module.log("method " + callback.getMember() + " return with " + callback.getResult());
+        }
+    }
 }

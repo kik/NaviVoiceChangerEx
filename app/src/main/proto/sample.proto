@@ -44,7 +44,7 @@ message Maneuver {
 
 message ManeuverItem {
     ManeuverItemX x = 14;
-    ManeuverItemY = 16;
+    ManeuverItemY y = 16;
 }
 
 message ManeuverItemX {

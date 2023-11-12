@@ -22,7 +22,7 @@ import okhttp3.RequestBody;
 public class VoiceVoxEngineApi {
     private final String url;
     private final String username;
-    private final String passowrd;
+    private final String password;
 
     private final OkHttpClient client;
 
@@ -30,7 +30,7 @@ public class VoiceVoxEngineApi {
     {
         this.url = url;
         this.username = username;
-        this.passowrd = password;
+        this.password = password;
         this.client = new OkHttpClient();
     }
 
@@ -42,8 +42,8 @@ public class VoiceVoxEngineApi {
         }
         var builder = new Request.Builder()
                 .url(uriBuilder.build());
-        if (!username.isEmpty() && !passowrd.isEmpty()) {
-            builder.header("Authorization", Credentials.basic(username, passowrd));
+        if (!username.isEmpty() && !password.isEmpty()) {
+            builder.header("Authorization", Credentials.basic(username, password));
         }
         return builder;
     }

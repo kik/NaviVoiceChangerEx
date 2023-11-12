@@ -4,8 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 
-import com.google.protobuf.CodedInputStream;
-import com.google.protobuf.WireFormat;
+import com.google.common.collect.Iterables;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -21,6 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModuleInterface;
@@ -258,115 +258,6 @@ public class GoogleMapsHookBuilder extends AbstactHookBuilder {
         }
     }
 
-    //
-    // MobileMaps/SynthesizeTextの引数
-    //
-    private static void dumpProto(byte[] obj, String cls, String indent) throws IOException {
-        var reader = CodedInputStream.newInstance(obj);
-        ModuleMain.module.log(indent + "{");
-        while (!reader.isAtEnd()) {
-            int tag = reader.readTag();
-            int field = WireFormat.getTagFieldNumber(tag);
-            int type = WireFormat.getTagWireType(tag);
-            switch (type) {
-                case WireFormat.WIRETYPE_VARINT: {
-                    long value = reader.readRawVarint64();
-                    ModuleMain.module.log(indent + "  " + field + " VARIANT: " + value);
-                    break;
-                }
-                case WireFormat.WIRETYPE_FIXED64: {
-                    if (cls.equals("Item") && field == 6) {
-                        ModuleMain.module.log(indent + "  " + field + " Double: " + reader.readDouble());
-                        break;
-                    }
-                    long value = reader.readFixed64();
-                    ModuleMain.module.log(indent + "  " + field + " FIXED64: " + value);
-                    break;
-                }
-                case WireFormat.WIRETYPE_LENGTH_DELIMITED: {
-                    if (cls.equals("Item") && field == 1) {
-                        ModuleMain.module.log(indent + "  " + field + " Str: " + reader.readString());
-                        break;
-                    }
-                    if (cls.equals("Item") && field == 4) {
-                        ModuleMain.module.log(indent + "  " + field + " Str: " + reader.readString());
-                        break;
-                    }
-                    if (cls.equals("DistanceUnit") && (field == 1 || field == 2)) {
-                        ModuleMain.module.log(indent + "  " + field + " Str: " + reader.readString());
-                        break;
-                    }
-                    if (cls.equals("ManeuverItem") && field == 1) {
-                        ModuleMain.module.log(indent + "  " + field + " Str: " + reader.readString());
-                        break;
-                    }
-                    if (cls.equals("TailX") && (field == 1 || field == 2)) {
-                        ModuleMain.module.log(indent + "  " + field + " Str: " + reader.readString());
-                        break;
-                    }
-                    byte[] value = reader.readByteArray();
-                    if (cls.equals("Top") && field == 2) {
-                        ModuleMain.module.log(indent + "  " + field + " Body:");
-                        dumpProto(value, "Body", indent + "  ");
-                        break;
-                    } else if (cls.equals("Body") && field == 2) {
-                        ModuleMain.module.log(indent + "  " + field + " Element:");
-                        dumpProto(value, "Element", indent + "  ");
-                        break;
-                    } else if (cls.equals("Body") && field == 5) {
-                        ModuleMain.module.log(indent + "  " + field + " Tail:");
-                        dumpProto(value, "Tail", indent + "  ");
-                        break;
-                    } else if (cls.equals("Element") && field == 1) {
-                        ModuleMain.module.log(indent + "  " + field + " Item:");
-                        dumpProto(value, "Item", indent + "  ");
-                        break;
-                    } else if (cls.equals("Item") && field == 11) {
-                        ModuleMain.module.log(indent + "  " + field + " DistanceUnit:");
-                        dumpProto(value, "DistanceUnit", indent + "  ");
-                        break;
-                    } else if (cls.equals("Item") && field == 16) {
-                        ModuleMain.module.log(indent + "  " + field + " Maneuver:");
-                        dumpProto(value, "Maneuver", indent + "  ");
-                        break;
-                    } else if (cls.equals("Maneuver") && field == 1) {
-                        ModuleMain.module.log(indent + "  " + field + " ManeuverItem:");
-                        dumpProto(value, "ManeuverItem", indent + "  ");
-                        break;
-                    } else if (cls.equals("ManeuverItem") && field == 14) {
-                        ModuleMain.module.log(indent + "  " + field + " ManeuverItemX:");
-                        dumpProto(value, "ManeuverItemX", indent + "  ");
-                        break;
-                    } else if (cls.equals("ManeuverItem") && field == 16) {
-                        ModuleMain.module.log(indent + "  " + field + " ManeuverItemY:");
-                        dumpProto(value, "ManeuverItemY", indent + "  ");
-                        break;
-                    } else if (cls.equals("Tail") && field == 3) {
-                        ModuleMain.module.log(indent + "  " + field + " TailX:");
-                        dumpProto(value, "TailX", indent + "  ");
-                        break;
-                    }
-                    var builder = new StringBuilder();
-                    builder.append("[ ");
-                    for (byte b : value) {
-                        builder.append(String.format("%02X ", b & 0xFF));
-                    }
-                    builder.append("]");
-                    ModuleMain.module.log(indent + "  " + field + " LENGTH: " + builder.toString());
-                    break;
-                }
-                case WireFormat.WIRETYPE_FIXED32: {
-                    int value = reader.readFixed32();
-                    ModuleMain.module.log(indent + "  " + field + " FIXED32: " + value);
-                    break;
-                }
-                default:
-            }
-        }
-        ModuleMain.module.log(indent + "}");
-    }
-
-
     private static void dumpTextStructure(Object obj) {
         try {
             Field f = obj.getClass().getField("b");
@@ -377,33 +268,9 @@ public class GoogleMapsHookBuilder extends AbstactHookBuilder {
             }
             os.close();
             var array = os.toByteArray();
-            hexdump(array);
-            dumpProto(array, "Top", "");
+            ModuleMain.module.log("\n" + Util.hexdump(array));
+            ModuleMain.module.log("\n" + Util.dumpProto(array));
         } catch (Exception ignore) {
-        }
-    }
-
-    private static void hexdump(byte[] array) {
-        for (int i = 0; i < array.length; i += 16) {
-            var buf = new StringBuilder();
-            for (int j = 0; j < 16; j++) {
-                if (i + j < array.length) {
-                    buf.append(String.format("%02X ", array[i + j] & 0xFF));
-                } else {
-                    buf.append("   ");
-                }
-                if (j == 7) {
-                    buf.append(' ');
-                }
-            }
-            buf.append("     ");
-            for (int j = 0; j < 16; j++) {
-                if (i + j < array.length) {
-                    int b = array[i + j] & 0xFF;
-                    buf.append(0x20 <= b && b < 0x7F ? (char)b : '.');
-                }
-            }
-            ModuleMain.module.log(buf.toString());
         }
     }
 

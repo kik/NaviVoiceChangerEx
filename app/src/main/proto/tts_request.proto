@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option java_package = "io.github.kik.navivoicechangerex.xposed.pb";
+option java_multiple_files = true;
+
+
+message Message {
+    NetworkTtsRequest request = 2;
+}
+
+message NetworkTtsRequest {
+    TtsParams params = 2;
+    TtsCommand command = 5;
+}
+
+message TtsParams {
+    repeated TtsParam items = 1;
+}
+
+message TtsCommand {
+    Name name = 3;
+}
+
+message Name {
+    string namespace = 1;
+    string name = 2;
+}
+
+message TtsParam {
+    string name = 1;
+    int32  int_value = 3;
+    string string_value = 4;
+    double distance_value = 6;
+    DistanceUnit distance_unit = 11;
+    TtsCommand command = 14;
+    FeatureIdString feature_id_string = 15;
+    TtsParams maneuvers = 16;
+}
+
+message DistanceUnit {
+    string type = 1;
+    string value = 2;
+}
+
+message FeatureIdString {
+    string feature_id = 1;
+    string value = 2;
+}

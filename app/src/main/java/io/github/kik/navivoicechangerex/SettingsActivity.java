@@ -128,8 +128,10 @@ public class SettingsActivity extends AppCompatActivity {
                 var styles = player.get().styles;
                 prefStyle.setEntries(styles.stream().map(s -> s.name).toArray(String[]::new));
                 var values = styles.stream().map(s -> Integer.toString(s.id)).toArray(String[]::new);
+                var defaultValue = values.length == 0 ? null : values[0];
                 prefStyle.setEntryValues(values);
-                prefStyle.setValue(Arrays.stream(values).findFirst().orElse(null));
+                var value = prefStyle.getValue();
+                prefStyle.setValue(Arrays.stream(values).filter(v -> v == value).findFirst().orElse(defaultValue));
                 return true;
             } else {
                 return false;
